@@ -6,17 +6,6 @@ This web application helps aquarium hobbyists calculate the correct amount of va
 
 
 
-/aquarium-dosing-calculator
-├── index.html               # Main HTML structure
-├── css/
-│   └── styles.css           # All CSS styles
-├── js/
-│   ├── utils.js             # Utility functions and constants
-│   ├── dosingCalculations.js # Core calculation logic for chemicals
-│   ├── uiHandlers.js        # DOM manipulation, event listeners, UI updates
-│   └── app.js               # Main application script, orchestrates calculations
-└── README.md                # This file
-
 
 ## Features
 
