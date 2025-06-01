@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Aquarium Dosing Calculator · Patch v2.2</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>
+        Aquarium Dosing Calculator
+        <button id="themeToggle" title="Toggle dark mode">🌓</button>
+    </h1>
+    <p id="errors" aria-live="polite" tabindex="0"></p>
+    <span id="timestamp"></span>
+
+    <fieldset tabindex="0">
+        <legend>1. Tank / Make-Up Water Volume</legend>
+        <div class="row">
+            <div>
+                <label for="volume">Volume <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Enter the NET water volume in your tank, not total size.</span></span></label>
+                <input type="number" id="volume" min="0.1" step="0.01" value="37.854" required>
+            </div>
+            <div>
+                <label for="unit">Unit <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">"US" is US gallons, "UK" is Imperial gallons.</span></span></label>
+                <select id="unit"></select>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset id="khco3" tabindex="0">
+        <legend>2. Potassium Bicarbonate (KH Booster)
+            <a href="https://www.2hraquarist.com/blogs/dosing/raising-kh-using-baking-soda" target="_blank" title="Source: 2Hr Aquarist" rel="noopener">🔗</a></legend>
+        <div class="row">
+            <div>
+                <label for="khCurrent">Current KH (°dKH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Your latest test result, before dosing.</span></span></label>
+                <input type="number" id="khCurrent" min="0" max="20" step="0.01" value="2.2" required>
+            </div>
+            <div>
+                <label for="khTarget">Target KH (°dKH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Your desired post-dose KH.</span></span></label>
+                <input type="number" id="khTarget" min="0" max="20" step="0.01" value="4" required>
+            </div>
+            <div>
+                <label for="khPurity">Purity (0.50 – 1.00) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">E.g. 0.99 for lab-grade. Lower if using food grade.</span></span></label>
+                <input type="number" id="khPurity" min="0.5" max="1" step="0.001" value="0.99" required>
+            </div>
+        </div>
+        <div class="result" id="khco3Result" aria-live="polite"></div><button type="button" class="copy-btn" id="copyKhco3" title="Copy result">📋</button>
+        <div class="split" id="khSplit"></div>
+        <div class="warning" id="khWarn"></div>
+    </fieldset>
+
+    <fieldset id="equilibrium" tabindex="0">
+        <legend>3. Seachem Equilibrium (GH Booster)
+            <a href="https://www.seachem.com/equilibrium.php" target="_blank" rel="noopener">🔗</a></legend>
+        <div class="row">
+            <div>
+                <label for="ghCurrent">Current GH (°dGH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Latest test reading before dosing.</span></span></label>
+                <input type="number" id="ghCurrent" min="0" max="30" step="0.01" value="2.2" required>
+            </div>
+            <div>
+                <label for="ghTarget">Target GH (°dGH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Your target GH after dosing.</span></span></label>
+                <input type="number" id="ghTarget" min="0" max="30" step="0.01" value="6" required>
+            </div>
+        </div>
+        <div class="result" id="equilibriumResult" aria-live="polite"></div><button type="button" class="copy-btn" id="copyEquil" title="Copy result">📋</button>
+        <div class="split" id="eqSplit"></div>
+    </fieldset>
+
+    <fieldset id="neutral" tabindex="0">
+        <legend>4. Seachem Neutral Regulator (pH ≈ 7.0)
+            <a href="https://www.seachem.com/neutral-regulator.php" target="_blank" rel="noopener">🔗</a></legend>
+        <div class="row">
+            <div>
+                <label for="phCurrent">Current pH <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Measured before dosing.</span></span></label>
+                <input type="number" id="phCurrent" min="5" max="9" step="0.01" value="7.5" required>
+            </div>
+            <div>
+                <label for="phTarget">Target pH <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Recommended 7.0 for most community tanks.</span></span></label>
+                <input type="number" id="phTarget" min="5" max="9" step="0.01" value="7.0" required>
+            </div>
+            <div>
+                <label for="nrKh">Current KH (°dKH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Your tank’s carbonate hardness (dKH).</span></span></label>
+                <input type="number" id="nrKh" min="0" max="20" step="0.01" value="4" required>
+            </div>
+        </div>
+        <div class="result" id="neutralResult" aria-live="polite"></div><button type="button" class="copy-btn" id="copyNR" title="Copy result">📋</button>
+        <div class="split" id="nrSplit"></div>
+    </fieldset>
+
+    <fieldset id="acid" tabindex="0">
+        <legend>5. Seachem Acid Buffer (KH & pH Reducer)
+            <a href="https://www.seachem.com/acid-buffer.php" target="_blank" rel="noopener">🔗</a></legend>
+        <div class="row">
+            <div>
+                <label for="acidCurrentKh">Current KH (°dKH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">KH before dosing, typically 2–8 dKH.</span></span></label>
+                <input type="number" id="acidCurrentKh" min="0" max="20" step="0.01" value="4" required>
+            </div>
+            <div>
+                <label for="acidTargetKh">Target KH (°dKH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Estimate KH after reaching target pH (see docs).</span></span></label>
+                <input type="number" id="acidTargetKh" min="0" max="20" step="0.01" value="1.67" required>
+            </div>
+        </div>
+        <div class="result" id="acidResult" aria-live="polite"></div><button type="button" class="copy-btn" id="copyAcid" title="Copy result">📋</button>
+        <div class="split" id="acidSplit"></div>
+    </fieldset>
+
+    <fieldset id="gold" tabindex="0">
+        <legend>6. Seachem Gold Buffer (Goldfish pH 7.2 – 7.8)
+            <a href="https://www.seachem.com/gold-buffer.php" target="_blank" rel="noopener">🔗</a></legend>
+        <div class="row">
+            <div>
+                <label for="phGoldCurrent">Current pH <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">For goldfish tanks only.</span></span></label>
+                <input type="number" id="phGoldCurrent" min="6" max="8.5" step="0.01" value="7" required>
+            </div>
+            <div>
+                <label for="phGoldTarget">Target pH <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Usually 7.2–7.8 for goldfish.</span></span></label>
+                <input type="number" id="phGoldTarget" min="6" max="8.5" step="0.01" value="7.5" required>
+            </div>
+        </div>
+        <div class="result" id="goldResult" aria-live="polite"></div><button type="button" class="copy-btn" id="copyGold" title="Copy result">📋</button>
+        <div class="split" id="goldSplit"></div>
+    </fieldset>
+
+    <div id="stickyBtns" style="text-align:center;margin-top:2rem">
+        <button id="btnCalc" class="sticky-btn">Calculate All Doses</button>
+        <button id="btnReset" class="sticky-btn" style="right:8px;left:auto;background:var(--danger);margin-left:.7em;">Reset</button>
+        <button id="btnCsv" class="sticky-btn" style="left:auto;right:8px;background:var(--primary-hover);margin-left:.7em;">Download as CSV</button>
+    </div>
+
+    <footer>
+        patch v2.2 · UX+accessibility+mobile+clipboard+CSV+reset+debounce+source links
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script src="js/dosingCalculations.js"></script>
+    <script src="js/uiHandlers.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
