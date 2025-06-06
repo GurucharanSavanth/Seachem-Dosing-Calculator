@@ -142,9 +142,7 @@ function displayErrors(errorMessages, scrollTo = true) {
  * @param {number} dose - Calculated dose in grams.
  */
 function updateKhco3Results(dose) {
-    const doseStr = fmt(dose);
-    khco3ResultEl.textContent = `${doseStr} g KHCO₃`;
-    khco3ResultEl.dataset.dose = doseStr;
+    khco3ResultEl.textContent = `${fmt(dose)} g KHCO₃`;
     khSplitEl.textContent = splitText(dose);
     khWarnEl.textContent = ''; // Clear previous warnings if any
 }
@@ -155,9 +153,7 @@ function updateKhco3Results(dose) {
  * @param {boolean} isNeeded - Whether Equilibrium is needed.
  */
 function updateEquilibriumResults(dose, isNeeded) {
-    const doseStr = fmt(dose);
-    equilibriumResultEl.textContent = isNeeded ? `${doseStr} g Equilibrium` : 'No Equilibrium required';
-    equilibriumResultEl.dataset.dose = isNeeded ? doseStr : '0';
+    equilibriumResultEl.textContent = isNeeded ? `${fmt(dose)} g Equilibrium` : 'No Equilibrium required';
     eqSplitEl.textContent = isNeeded ? splitText(dose) : '';
 }
 
@@ -166,9 +162,7 @@ function updateEquilibriumResults(dose, isNeeded) {
  * @param {number} dose - Calculated dose in grams.
  */
 function updateNeutralRegulatorResults(dose) {
-    const doseStr = fmt(dose);
-    neutralResultEl.textContent = dose > 0 ? `${doseStr} g Neutral Regulator` : 'No Neutral Regulator required';
-    neutralResultEl.dataset.dose = dose > 0 ? doseStr : '0';
+    neutralResultEl.textContent = dose > 0 ? `${fmt(dose)} g Neutral Regulator` : 'No Neutral Regulator required';
     nrSplitEl.textContent = dose > 0 ? splitText(dose) : '';
 }
 
@@ -177,9 +171,7 @@ function updateNeutralRegulatorResults(dose) {
  * @param {number} dose - Calculated dose in grams.
  */
 function updateAcidBufferResults(dose) {
-    const doseStr = fmt(dose);
-    acidResultEl.textContent = dose > 0 ? `${doseStr} g Acid Buffer` : 'No Acid Buffer required';
-    acidResultEl.dataset.dose = dose > 0 ? doseStr : '0';
+    acidResultEl.textContent = dose > 0 ? `${fmt(dose)} g Acid Buffer` : 'No Acid Buffer required';
     acidSplitEl.textContent = dose > 0 ? splitText(dose) : '';
 }
 
@@ -189,9 +181,7 @@ function updateAcidBufferResults(dose) {
  * @param {boolean} fullDose - Whether it's a full dose.
  */
 function updateGoldBufferResults(dose, fullDose) {
-    const doseStr = fmt(dose);
-    goldResultEl.textContent = dose > 0 ? `${doseStr} g Gold Buffer (${fullDose ? 'full' : 'half'} dose)` : 'No Gold Buffer required';
-    goldResultEl.dataset.dose = dose > 0 ? doseStr : '0';
+    goldResultEl.textContent = dose > 0 ? `${fmt(dose)} g Gold Buffer (${fullDose ? 'full' : 'half'} dose)` : 'No Gold Buffer required';
     goldSplitEl.textContent = dose > 0 ? splitText(dose) : '';
 }
 
@@ -225,11 +215,11 @@ function handleReset(calculateCallback) {
 function handleCsvDownload() {
     const rows = [
         ['Parameter', 'Dose (g)', 'Split Dose Info'],
-        ['KHCO₃', khco3ResultEl.dataset.dose || '0', khSplitEl.textContent],
-        ['Equilibrium', equilibriumResultEl.dataset.dose || '0', eqSplitEl.textContent],
-        ['Neutral Regulator', neutralResultEl.dataset.dose || '0', nrSplitEl.textContent],
-        ['Acid Buffer', acidResultEl.dataset.dose || '0', acidSplitEl.textContent],
-        ['Gold Buffer', goldResultEl.dataset.dose || '0', goldSplitEl.textContent],
+        ['KHCO₃', khco3ResultEl.textContent.replace(' g KHCO₃', ''), khSplitEl.textContent],
+        ['Equilibrium', equilibriumResultEl.textContent.replace(' g Equilibrium', '').replace('No Equilibrium required', '0'), eqSplitEl.textContent],
+        ['Neutral Regulator', neutralResultEl.textContent.replace(' g Neutral Regulator', '').replace('No Neutral Regulator required', '0'), nrSplitEl.textContent],
+        ['Acid Buffer', acidResultEl.textContent.replace(' g Acid Buffer', '').replace('No Acid Buffer required', '0'), acidSplitEl.textContent],
+        ['Gold Buffer', goldResultEl.textContent.replace(/ g Gold Buffer \(.+\)/, '').replace('No Gold Buffer required', '0'), goldSplitEl.textContent],
     ];
     const csvContent = rows.map(r => r.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -259,19 +249,17 @@ function setupCopyButtons() {
         const resultEl = qs(resultId);
         if (button && resultEl) {
             button.addEventListener('click', () => {
-                const valueToCopy = resultEl.dataset.dose || '0';
-
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(valueToCopy)
+                const textToCopy = resultEl.textContent;
+                if (textToCopy && navigator.clipboard) {
+                    navigator.clipboard.writeText(textToCopy.split(' ')[0]) // Copy only the number part
                         .then(() => {
                             button.textContent = '✔️';
                             setTimeout(() => { button.textContent = '📋'; }, 900);
                         })
                         .catch(err => console.error('Failed to copy: ', err));
-                } else {
-                    // Fallback for older browsers
+                } else if (textToCopy) { // Fallback for older browsers
                     const textArea = document.createElement("textarea");
-                    textArea.value = valueToCopy;
+                    textArea.value = textToCopy.split(' ')[0];
                     document.body.appendChild(textArea);
                     textArea.focus();
                     textArea.select();
