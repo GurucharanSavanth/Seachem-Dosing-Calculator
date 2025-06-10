@@ -1,140 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Aquarium Dosing Calculator · Patch v2.2</title>
+    <title>Aquarium Calculator v4.1 - Dosing & Parameters</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <h1>
-        Aquarium Dosing Calculator
-        <button id="themeToggle" title="Toggle dark mode">🌓</button>
-    </h1>
-    <p id="errors" aria-live="polite" tabindex="0"></p>
-    <span id="timestamp"></span>
-
-    <fieldset tabindex="0">
-        <legend>1. Tank / Make-Up Water Volume</legend>
-        <div class="row">
-            <div>
-                <label for="volume">Volume <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Enter the NET water volume in your tank, not total size.</span></span></label>
-                <input type="number" id="volume" min="0.1" step="0.01" value="37.854" required>
-            </div>
-            <div>
-                <label for="unit">Unit <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">"US" is US gallons, "UK" is Imperial gallons.</span></span></label>
-                <select id="unit"></select>
-            </div>
+    <header class="main-header">
+        <div>
+            <h1 data-lang-key="main_title">Aquarium Calculator</h1>
+            <p class="subtitle" data-lang-key="subtitle">Dosing & Water Parameter Analysis</p>
         </div>
-    </fieldset>
-
-    <fieldset id="khco3" tabindex="0">
-        <legend>2. Potassium Bicarbonate (KH Booster)
-            <a href="https://www.2hraquarist.com/blogs/dosing/raising-kh-using-baking-soda" target="_blank" title="Source: 2Hr Aquarist" rel="noopener">🔗</a></legend>
-        <div class="row">
-            <div>
-                <label for="khCurrent">Current KH (°dKH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Your latest test result, before dosing.</span></span></label>
-                <input type="number" id="khCurrent" min="0" max="20" step="0.01" value="2.2" required>
-            </div>
-            <div>
-                <label for="khTarget">Target KH (°dKH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Your desired post-dose KH.</span></span></label>
-                <input type="number" id="khTarget" min="0" max="20" step="0.01" value="4" required>
-            </div>
-            <div>
-                <label for="khPurity">Purity (0.50 – 1.00) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">E.g. 0.99 for lab-grade. Lower if using food grade.</span></span></label>
-                <input type="number" id="khPurity" min="0.5" max="1" step="0.001" value="0.99" required>
-            </div>
+        <div class="header-controls">
+            <!-- ACCESSIBILITY FIX: Added aria-label for better screen reader context. -->
+            <button id="langToggle" title="Switch Language" aria-label="Switch language between English and Kannada">EN/ಕ</button>
+            <button id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">🌓</button>
         </div>
-        <div class="result" id="khco3Result" aria-live="polite"></div><button type="button" class="copy-btn" id="copyKhco3" title="Copy result">📋</button>
-        <div class="split" id="khSplit"></div>
-        <div class="warning" id="khWarn"></div>
-    </fieldset>
+    </header>
 
-    <fieldset id="equilibrium" tabindex="0">
-        <legend>3. Seachem Equilibrium (GH Booster)
-            <a href="https://www.seachem.com/equilibrium.php" target="_blank" rel="noopener">🔗</a></legend>
-        <div class="row">
-            <div>
-                <label for="ghCurrent">Current GH (°dGH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Latest test reading before dosing.</span></span></label>
-                <input type="number" id="ghCurrent" min="0" max="30" step="0.01" value="2.2" required>
-            </div>
-            <div>
-                <label for="ghTarget">Target GH (°dGH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Your target GH after dosing.</span></span></label>
-                <input type="number" id="ghTarget" min="0" max="30" step="0.01" value="6" required>
-            </div>
+    <main class="main-grid">
+        <!-- Column 1: Water Parameters & Status -->
+        <section class="parameter-section">
+            <h2 data-lang-key="param_status_title">Water Parameter Status</h2>
+            <fieldset>
+                <legend data-lang-key="core_params_title">Core Parameters</legend>
+                <div class="param-row">
+                    <label for="paramAmmonia" data-lang-key="param_ammonia_label">Ammonia (NH₃/NH₄⁺)</label>
+                    <div class="input-group">
+                        <input type="number" id="paramAmmonia" min="0" step="0.1" value="0">
+                        <span>ppm</span>
+                    </div>
+                    <div id="statusAmmonia" class="status-indicator"></div>
+                </div>
+                <div class="param-row">
+                    <label for="paramNitrate" data-lang-key="param_nitrate_label">Nitrate (NO₃)</label>
+                    <div class="input-group">
+                        <input type="number" id="paramNitrate" min="0" step="1" value="15">
+                        <span>ppm</span>
+                    </div>
+                    <div id="statusNitrate" class="status-indicator"></div>
+                </div>
+                <div class="param-row">
+                    <label for="paramNitrite" data-lang-key="param_nitrite_label">Nitrite (NO₂)</label>
+                    <div class="input-group">
+                        <input type="number" id="paramNitrite" min="0" step="0.1" value="0">
+                        <span>ppm</span>
+                    </div>
+                    <div id="statusNitrite" class="status-indicator"></div>
+                </div>
+                <div class="param-row">
+                    <label for="paramGh" data-lang-key="param_gh_label">General Hardness (GH)</label>
+                    <div class="input-group">
+                        <input type="number" id="paramGh" min="0" step="1" value="150">
+                        <span>ppm</span>
+                    </div>
+                    <div id="statusGh" class="status-indicator"></div>
+                </div>
+                <div class="param-row">
+                    <label for="paramKh" data-lang-key="param_kh_label">Carbonate Hardness (KH)</label>
+                    <div class="input-group">
+                        <input type="number" id="paramKh" min="0" step="1" value="100">
+                        <span>ppm</span>
+                    </div>
+                    <div id="statusKh" class="status-indicator"></div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend data-lang-key="emergency_title">Emergency Recommendations</legend>
+                <div id="recommendations" class="recommendations-box">
+                    <p data-lang-key="reco_ok">No issues detected.</p>
+                </div>
+            </fieldset>
+        </section>
+
+        <!-- Column 2: Dosing Calculators -->
+        <section class="calculator-section">
+            <h2 data-lang-key="dosing_calculators_title">Dosing Calculators</h2>
+
+            <fieldset>
+                <legend data-lang-key="water_volume_title">1. Water Volume</legend>
+                <div class="row">
+                    <div>
+                        <label for="volume" data-lang-key="net_volume_label">Net Water Volume</label>
+                        <input type="number" id="volume" min="0.1" step="0.01" value="40" required>
+                    </div>
+                    <div>
+                        <label for="unit" data-lang-key="unit_label">Unit</label>
+                        <select id="unit"></select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <p id="errors" aria-live="polite" tabindex="-1"></p>
+
+            <details id="khco3-details" open>
+                <summary data-lang-key="kh_booster_title">2. KH Booster (Potassium Bicarbonate)</summary>
+                <div class="details-content">
+                    <div class="row">
+                        <div>
+                            <label for="khCurrent" data-lang-key="current_kh_label">Current KH (°dKH)</label>
+                            <input type="number" id="khCurrent" min="0" max="30" step="0.01" value="5.6" required>
+                        </div>
+                        <div>
+                            <label for="khTarget" data-lang-key="target_kh_label">Target KH (°dKH)</label>
+                            <input type="number" id="khTarget" min="0" max="30" step="0.01" value="6.0" required>
+                        </div>
+                        <div>
+                            <label for="khPurity" data-lang-key="purity_label">Purity (0.5-1.0)</label>
+                            <input type="number" id="khPurity" min="0.5" max="1" step="0.001" value="0.99" required>
+                        </div>
+                    </div>
+                    <div class="result-area">
+                        <div class="result" id="khco3Result" aria-live="polite"></div>
+                        <button type="button" class="copy-btn" id="copyKhco3" title="Copy result" aria-label="Copy KHCO3 result">📋</button>
+                    </div>
+                    <div class="split" id="khSplit"></div>
+                </div>
+            </details>
+
+            <details id="equilibrium-details">
+                <summary data-lang-key="gh_booster_title">3. GH Booster (Seachem Equilibrium)</summary>
+                <div class="details-content">
+                    <div class="row">
+                        <div>
+                            <label for="ghCurrent" data-lang-key="current_gh_label">Current GH (°dGH)</label>
+                            <input type="number" id="ghCurrent" min="0" max="40" step="0.01" value="8.4" required>
+                        </div>
+                        <div>
+                            <label for="ghTarget" data-lang-key="target_gh_label">Target GH (°dGH)</label>
+                            <input type="number" id="ghTarget" min="0" max="40" step="0.01" value="10" required>
+                        </div>
+                    </div>
+                    <div class="result-area">
+                        <div class="result" id="equilibriumResult" aria-live="polite"></div>
+                        <button type="button" class="copy-btn" id="copyEquil" title="Copy result" aria-label="Copy Equilibrium result">📋</button>
+                    </div>
+                    <div class="split" id="eqSplit"></div>
+                </div>
+            </details>
+
+            <details>
+                <summary data-lang-key="ph_neutralizer_title">4. pH Neutralizer (Seachem Neutral Regulator)</summary>
+                <div class="details-content">
+                    <div class="row">
+                        <div>
+                            <label for="phCurrent" data-lang-key="current_ph_label">Current pH</label>
+                            <input type="number" id="phCurrent" min="5" max="9" step="0.01" value="7.5" required>
+                        </div>
+                        <div>
+                            <label for="phTarget" data-lang-key="target_ph_label">Target pH (≈7.0)</label>
+                            <input type="number" id="phTarget" min="5" max="9" step="0.01" value="7.0" required>
+                        </div>
+                        <div>
+                            <label for="nrKh" data-lang-key="current_kh_label">Current KH (°dKH)</label>
+                            <input type="number" id="nrKh" min="0" max="30" step="0.01" value="5.6" required>
+                        </div>
+                    </div>
+                    <div class="result-area">
+                        <div class="result" id="neutralResult" aria-live="polite"></div>
+                        <button type="button" class="copy-btn" id="copyNR" title="Copy result" aria-label="Copy Neutral Regulator result">📋</button>
+                    </div>
+                    <div class="split" id="nrSplit"></div>
+                </div>
+            </details>
+
+            <details>
+                <summary data-lang-key="kh_reducer_title">5. KH & pH Reducer (Seachem Acid Buffer)</summary>
+                <div class="details-content">
+                    <div class="row">
+                        <div>
+                            <label for="acidCurrentKh" data-lang-key="current_kh_label">Current KH (°dKH)</label>
+                            <input type="number" id="acidCurrentKh" min="0" max="30" step="0.01" value="5.6" required>
+                        </div>
+                        <div>
+                            <label for="acidTargetKh" data-lang-key="target_kh_label">Target KH (°dKH)</label>
+                            <input type="number" id="acidTargetKh" min="0" max="30" step="0.01" value="4.0" required>
+                        </div>
+                    </div>
+                    <div class="result-area">
+                        <div class="result" id="acidResult" aria-live="polite"></div>
+                        <button type="button" class="copy-btn" id="copyAcid" title="Copy result" aria-label="Copy Acid Buffer result">📋</button>
+                    </div>
+                    <div class="split" id="acidSplit"></div>
+                </div>
+            </details>
+
+            <details>
+                <summary data-lang-key="goldfish_buffer_title">6. Goldfish Buffer (Seachem Gold Buffer)</summary>
+                <div class="details-content">
+                    <div class="row">
+                        <div>
+                            <label for="phGoldCurrent" data-lang-key="current_ph_label">Current pH</label>
+                            <input type="number" id="phGoldCurrent" min="6" max="8.5" step="0.01" value="7.0" required>
+                        </div>
+                        <div>
+                            <label for="phGoldTarget" data-lang-key="target_ph_label">Target pH</label>
+                            <input type="number" id="phGoldTarget" min="6" max="8.5" step="0.01" value="7.5" required>
+                        </div>
+                    </div>
+                    <div class="result-area">
+                        <div class="result" id="goldResult" aria-live="polite"></div>
+                        <button type="button" class="copy-btn" id="copyGold" title="Copy result" aria-label="Copy Gold Buffer result">📋</button>
+                    </div>
+                    <div class="split" id="goldSplit"></div>
+                </div>
+            </details>
+        </section>
+    </main>
+
+    <footer class="main-footer-actions">
+        <div class="footer-info">
+            <span id="timestamp"></span>
+            <button id="changelogBtn" class="link-btn" data-lang-key="changelog_btn">v4.1 Changelog</button>
         </div>
-        <div class="result" id="equilibriumResult" aria-live="polite"></div><button type="button" class="copy-btn" id="copyEquil" title="Copy result">📋</button>
-        <div class="split" id="eqSplit"></div>
-    </fieldset>
-
-    <fieldset id="neutral" tabindex="0">
-        <legend>4. Seachem Neutral Regulator (pH ≈ 7.0)
-            <a href="https://www.seachem.com/neutral-regulator.php" target="_blank" rel="noopener">🔗</a></legend>
-        <div class="row">
-            <div>
-                <label for="phCurrent">Current pH <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Measured before dosing.</span></span></label>
-                <input type="number" id="phCurrent" min="5" max="9" step="0.01" value="7.5" required>
-            </div>
-            <div>
-                <label for="phTarget">Target pH <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Recommended 7.0 for most community tanks.</span></span></label>
-                <input type="number" id="phTarget" min="5" max="9" step="0.01" value="7.0" required>
-            </div>
-            <div>
-                <label for="nrKh">Current KH (°dKH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Your tank’s carbonate hardness (dKH).</span></span></label>
-                <input type="number" id="nrKh" min="0" max="20" step="0.01" value="4" required>
-            </div>
+        <div class="actions">
+            <button id="btnCalc" data-lang-key="calculate_btn">Calculate Doses</button>
+            <button id="btnCsv" data-lang-key="download_csv_btn">Download CSV</button>
+            <button id="btnReset" class="danger" data-lang-key="reset_btn">Reset All</button>
         </div>
-        <div class="result" id="neutralResult" aria-live="polite"></div><button type="button" class="copy-btn" id="copyNR" title="Copy result">📋</button>
-        <div class="split" id="nrSplit"></div>
-    </fieldset>
-
-    <fieldset id="acid" tabindex="0">
-        <legend>5. Seachem Acid Buffer (KH & pH Reducer)
-            <a href="https://www.seachem.com/acid-buffer.php" target="_blank" rel="noopener">🔗</a></legend>
-        <div class="row">
-            <div>
-                <label for="acidCurrentKh">Current KH (°dKH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">KH before dosing, typically 2–8 dKH.</span></span></label>
-                <input type="number" id="acidCurrentKh" min="0" max="20" step="0.01" value="4" required>
-            </div>
-            <div>
-                <label for="acidTargetKh">Target KH (°dKH) <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Estimate KH after reaching target pH (see docs).</span></span></label>
-                <input type="number" id="acidTargetKh" min="0" max="20" step="0.01" value="1.67" required>
-            </div>
+    </footer>
+    
+    <!-- Changelog Modal -->
+    <div id="changelogModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button id="closeChangelog" class="modal-close-btn">&times;</button>
+            <h2 data-lang-key="changelog_title">Version 4.1 Changelog</h2>
+            <ul data-lang-key="changelog_list">
+                <!-- Content for this will be populated by uiHandlers.js -->
+            </ul>
         </div>
-        <div class="result" id="acidResult" aria-live="polite"></div><button type="button" class="copy-btn" id="copyAcid" title="Copy result">📋</button>
-        <div class="split" id="acidSplit"></div>
-    </fieldset>
-
-    <fieldset id="gold" tabindex="0">
-        <legend>6. Seachem Gold Buffer (Goldfish pH 7.2 – 7.8)
-            <a href="https://www.seachem.com/gold-buffer.php" target="_blank" rel="noopener">🔗</a></legend>
-        <div class="row">
-            <div>
-                <label for="phGoldCurrent">Current pH <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">For goldfish tanks only.</span></span></label>
-                <input type="number" id="phGoldCurrent" min="6" max="8.5" step="0.01" value="7" required>
-            </div>
-            <div>
-                <label for="phGoldTarget">Target pH <span class="tooltip" tabindex="0">ℹ️<span class="tiptext">Usually 7.2–7.8 for goldfish.</span></span></label>
-                <input type="number" id="phGoldTarget" min="6" max="8.5" step="0.01" value="7.5" required>
-            </div>
-        </div>
-        <div class="result" id="goldResult" aria-live="polite"></div><button type="button" class="copy-btn" id="copyGold" title="Copy result">📋</button>
-        <div class="split" id="goldSplit"></div>
-    </fieldset>
-
-    <div id="stickyBtns" style="text-align:center;margin-top:2rem">
-        <button id="btnCalc" class="sticky-btn">Calculate All Doses</button>
-        <button id="btnReset" class="sticky-btn" style="right:8px;left:auto;background:var(--danger);margin-left:.7em;">Reset</button>
-        <button id="btnCsv" class="sticky-btn" style="left:auto;right:8px;background:var(--primary-hover);margin-left:.7em;">Download as CSV</button>
     </div>
 
-    <footer>
-        patch v2.2 · UX+accessibility+mobile+clipboard+CSV+reset+debounce+source links
-    </footer>
-
+    <!-- Load scripts at the end of the body -->
+    <script src="js/translations.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/dosingCalculations.js"></script>
     <script src="js/uiHandlers.js"></script>
     <script src="js/app.js"></script>
 </body>
+
 </html>

@@ -1,322 +1,294 @@
-// js/uiHandlers.js
+// js/uiHandlers.js v4.1 (Patched)
 
-// --- DOM Element References (initialized in app.js or initUI) ---
-let volumeEl, unitEl, errorsEl, timestampEl, themeToggleEl,
-    khCurrentEl, khTargetEl, khPurityEl, khco3ResultEl, khSplitEl, khWarnEl,
-    ghCurrentEl, ghTargetEl, equilibriumResultEl, eqSplitEl,
-    phCurrentEl, phTargetEl, nrKhEl, neutralResultEl, nrSplitEl,
-    acidCurrentKhEl, acidTargetKhEl, acidResultEl, acidSplitEl,
-    phGoldCurrentEl, phGoldTargetEl, goldResultEl, goldSplitEl,
-    btnCalcEl, btnResetEl, btnCsvEl;
+let allElements = {};
+let currentLang = 'en';
 
-// --- Input Data Object ---
-const inputs = {};
-
-/**
- * Initializes DOM element references.
- */
+/** Initializes all DOM element references into a central object. */
 function initDOMReferences() {
-    volumeEl = qs('volume');
-    unitEl = qs('unit');
-    errorsEl = qs('errors');
-    timestampEl = qs('timestamp');
-    themeToggleEl = qs('themeToggle');
-
-    khCurrentEl = qs('khCurrent');
-    khTargetEl = qs('khTarget');
-    khPurityEl = qs('khPurity');
-    khco3ResultEl = qs('khco3Result');
-    khSplitEl = qs('khSplit');
-    khWarnEl = qs('khWarn');
-
-    ghCurrentEl = qs('ghCurrent');
-    ghTargetEl = qs('ghTarget');
-    equilibriumResultEl = qs('equilibriumResult');
-    eqSplitEl = qs('eqSplit');
-
-    phCurrentEl = qs('phCurrent');
-    phTargetEl = qs('phTarget');
-    nrKhEl = qs('nrKh');
-    neutralResultEl = qs('neutralResult');
-    nrSplitEl = qs('nrSplit');
-
-    acidCurrentKhEl = qs('acidCurrentKh');
-    acidTargetKhEl = qs('acidTargetKh');
-    acidResultEl = qs('acidResult');
-    acidSplitEl = qs('acidSplit');
-
-    phGoldCurrentEl = qs('phGoldCurrent');
-    phGoldTargetEl = qs('phGoldTarget');
-    goldResultEl = qs('goldResult');
-    goldSplitEl = qs('goldSplit');
-
-    btnCalcEl = qs('btnCalc');
-    btnResetEl = qs('btnReset');
-    btnCsvEl = qs('btnCsv');
+    const ids = [
+        'themeToggle', 'langToggle', 'timestamp', 'errors', 'changelogBtn', 'changelogModal', 'closeChangelog',
+        'recommendations', 'paramAmmonia', 'statusAmmonia', 'paramNitrate', 'statusNitrate',
+        'paramNitrite', 'statusNitrite', 'paramGh', 'statusGh', 'paramKh', 'statusKh',
+        'volume', 'unit', 'khCurrent', 'khTarget', 'khPurity', 'khco3Result', 'khSplit', 'copyKhco3',
+        'ghCurrent', 'ghTarget', 'equilibriumResult', 'eqSplit', 'copyEquil',
+        'phCurrent', 'phTarget', 'nrKh', 'neutralResult', 'nrSplit', 'copyNR',
+        'acidCurrentKh', 'acidTargetKh', 'acidResult', 'acidSplit', 'copyAcid',
+        'phGoldCurrent', 'phGoldTarget', 'goldResult', 'goldSplit', 'copyGold',
+        'btnCalc', 'btnReset', 'btnCsv'
+    ];
+    ids.forEach(id => { allElements[id] = qs(id); });
 }
 
-/**
- * Populates the unit selection dropdown and sets the last used unit.
- */
+/** Populates the unit selection dropdown and sets the last used unit. */
 function setupUnitSelection() {
-    const units = [['L', 'Litres (L)'], ['US', 'US Gallons'], ['UK', 'UK Gallons']];
-    units.forEach(([value, text]) => {
+    const units = { L: "Litres (L)", US: "US Gallons", UK: "UK Gallons" };
+    Object.entries(units).forEach(([value, text]) => {
         const option = document.createElement('option');
         option.value = value;
         option.textContent = text;
-        unitEl.appendChild(option);
+        allElements.unit.appendChild(option);
     });
-    const lastUnit = localStorage.getItem(LAST_UNIT_KEY);
-    if (lastUnit) {
-        unitEl.value = lastUnit;
-    }
-    unitEl.addEventListener('change', () => {
-        localStorage.setItem(LAST_UNIT_KEY, unitEl.value);
-    });
+    allElements.unit.value = localStorage.getItem(LAST_UNIT_KEY) || 'L';
+    allElements.unit.addEventListener('change', () => localStorage.setItem(LAST_UNIT_KEY, allElements.unit.value));
 }
 
-/**
- * Sets up the theme toggle functionality.
- */
+/** Sets up the theme toggle functionality. */
 function setupThemeToggle() {
-    const storedTheme = localStorage.getItem(THEME_KEY);
-    const currentTheme = storedTheme ? storedTheme : (prefersDarkMode() ? 'dark' : 'light');
-    applyTheme(currentTheme);
-
-    themeToggleEl.addEventListener('click', () => {
+    const storedTheme = localStorage.getItem(THEME_KEY) || (prefersDarkMode() ? 'dark' : 'light');
+    applyTheme(storedTheme);
+    allElements.themeToggle.addEventListener('click', () => {
         const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
         applyTheme(newTheme);
         localStorage.setItem(THEME_KEY, newTheme);
     });
 }
 
-/**
- * Collects all input values from the DOM.
- * @returns {object} An object containing all parsed input values.
- */
+/** Sets up the language toggle functionality. */
+function setupLanguageToggle() {
+    currentLang = localStorage.getItem(LANG_KEY) || 'en';
+    translatePage();
+    allElements.langToggle.addEventListener('click', () => {
+        currentLang = currentLang === 'en' ? 'kn' : 'en';
+        translatePage();
+        localStorage.setItem(LANG_KEY, currentLang);
+    });
+}
+
+/** Translates the entire page using data-lang-key attributes. */
+function translatePage() {
+    document.querySelectorAll('[data-lang-key]').forEach(el => {
+        const key = el.dataset.langKey;
+        const translation = translations[currentLang][key];
+
+        if (translation) {
+            // SECURITY REFACTOR: Check if the key indicates HTML content is expected.
+            // This is a pragmatic compromise to avoid a full i18n library.
+            // It's safer because we explicitly control which keys can contain HTML.
+            const isHtmlContent = key.startsWith('reco_') || key === 'changelog_list';
+            if (isHtmlContent) {
+                 el.innerHTML = translation; // Use innerHTML only for specific, trusted keys.
+            } else {
+                el.textContent = translation; // Default to the safer textContent.
+            }
+        }
+    });
+    // Manually trigger a recalculation to update dynamic result text.
+    doDosingCalculations();
+}
+
+
+/** Collects all input values from the DOM. */
 function getAllInputValues() {
-    inputs.volume = parseFloatSafe(volumeEl.value);
-    inputs.unit = unitEl.value;
-
-    inputs.khCurrent = parseFloatSafe(khCurrentEl.value);
-    inputs.khTarget = parseFloatSafe(khTargetEl.value);
-    inputs.khPurity = parseFloatSafe(khPurityEl.value);
-
-    inputs.ghCurrent = parseFloatSafe(ghCurrentEl.value);
-    inputs.ghTarget = parseFloatSafe(ghTargetEl.value);
-
-    inputs.phCurrent = parseFloatSafe(phCurrentEl.value);
-    inputs.phTarget = parseFloatSafe(phTargetEl.value);
-    inputs.nrKh = parseFloatSafe(nrKhEl.value);
-
-    inputs.acidCurrentKh = parseFloatSafe(acidCurrentKhEl.value);
-    inputs.acidTargetKh = parseFloatSafe(acidTargetKhEl.value);
-
-    inputs.phGoldCurrent = parseFloatSafe(phGoldCurrentEl.value);
-    inputs.phGoldTarget = parseFloatSafe(phGoldTargetEl.value);
-
+    const inputs = {};
+    const numericKeys = [
+        'paramAmmonia', 'paramNitrate', 'paramNitrite', 'paramGh', 'paramKh', 'volume',
+        'khCurrent', 'khTarget', 'khPurity', 'ghCurrent', 'ghTarget',
+        'phCurrent', 'phTarget', 'nrKh', 'acidCurrentKh', 'acidTargetKh',
+        'phGoldCurrent', 'phGoldTarget'
+    ];
+    for (const key in allElements) {
+        if (allElements[key] instanceof HTMLInputElement || allElements[key] instanceof HTMLSelectElement) {
+            inputs[key] = numericKeys.includes(key) ? parseFloatSafe(allElements[key].value) : allElements[key].value;
+        }
+    }
     return inputs;
 }
 
-/**
- * Displays validation errors or clears them.
- * @param {string[]} errorMessages - Array of error messages.
- * @param {boolean} [scrollTo=true] - Whether to scroll to the error message.
- */
-function displayErrors(errorMessages, scrollTo = true) {
-    if (errorMessages.length > 0) {
-        errorsEl.textContent = errorMessages.join(' • ');
-        if (scrollTo) {
-            setTimeout(() => {
-                errorsEl.focus();
-                errorsEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 120);
+/** Displays validation errors or clears them. */
+function displayErrors(errorMessages) {
+    allElements.errors.textContent = errorMessages.length > 0 ? errorMessages.join(' • ') : '';
+    if (errorMessages.length > 0) allElements.errors.focus();
+}
+
+/** Updates UI based on parameter status checks. */
+function handleParameterStatusUpdate() {
+    const inputs = getAllInputValues();
+    const litres = toLitres(inputs.volume, inputs.unit);
+    let recommendations = [];
+    const t = (key, replacements = {}) => {
+        let text = translations[currentLang][key] || key;
+        for(const r in replacements) {
+            text = text.replace(`{${r}}`, replacements[r]);
+        }
+        return text;
+    };
+
+    // Ammonia
+    if (inputs.paramAmmonia > 0) {
+        allElements.statusAmmonia.className = 'status-indicator warn';
+        allElements.statusAmmonia.textContent = t('status_danger');
+        recommendations.push(t('reco_ammonia_detected'));
+        if (litres > 0) {
+            const primeDose = calculatePrimeDose(litres);
+            recommendations.push(t('reco_prime_dose', {primeDose: fmt(primeDose)}));
+        } else {
+            recommendations.push(t('reco_volume_needed'));
         }
     } else {
-        errorsEl.textContent = '';
+        allElements.statusAmmonia.className = 'status-indicator good';
+        allElements.statusAmmonia.textContent = t('status_good');
+    }
+
+    // Nitrite
+    if (inputs.paramNitrite > 0) {
+        allElements.statusNitrite.className = 'status-indicator warn';
+        allElements.statusNitrite.textContent = t('status_danger');
+        recommendations.push(t('reco_nitrite_detected'));
+        if (litres > 0) {
+            const stabilityDose = calculateStabilityDose(litres);
+            recommendations.push(t('reco_stability_dose', {stabilityDose: fmt(stabilityDose)}));
+        }
+    } else {
+        allElements.statusNitrite.className = 'status-indicator good';
+        allElements.statusNitrite.textContent = t('status_good');
+    }
+
+    // Nitrate
+    if (inputs.paramNitrate > 50) {
+        allElements.statusNitrate.className = 'status-indicator warn';
+        allElements.statusNitrate.textContent = t('status_high');
+        recommendations.push(t('reco_nitrate_high'));
+    } else {
+        allElements.statusNitrate.className = 'status-indicator good';
+        allElements.statusNitrate.textContent = t('status_good');
+    }
+    
+    // GH
+    const dGH = ppmToDh(inputs.paramGh);
+    allElements.statusGh.className = 'status-indicator info';
+    allElements.statusGh.textContent = `${fmt(dGH, 1)} °dGH`;
+    allElements.ghCurrent.value = fmt(dGH, 2);
+    if (inputs.paramGh < 40 && inputs.paramGh > 0) {
+        recommendations.push(t('reco_gh_low'));
+    }
+
+    // KH
+    const dKH = ppmToDh(inputs.paramKh);
+    allElements.statusKh.className = 'status-indicator info';
+    allElements.statusKh.textContent = `${fmt(dKH, 1)} °dKH`;
+    [allElements.khCurrent, allElements.nrKh, allElements.acidCurrentKh].forEach(el => el.value = fmt(dKH, 2));
+    if (inputs.paramKh < 40 && inputs.paramKh > 0) {
+        recommendations.push(t('reco_kh_low'));
+    }
+
+    // SECURITY REFACTOR: Build recommendation list using DOM methods instead of a single innerHTML string.
+    allElements.recommendations.innerHTML = ''; // Clear previous recommendations
+    if (recommendations.length > 0) {
+        recommendations.forEach(rec => {
+            const p = document.createElement('p');
+            p.innerHTML = rec; // Still using innerHTML here as translations contain <strong> tags.
+            allElements.recommendations.appendChild(p);
+        });
+    } else {
+        const p = document.createElement('p');
+        p.textContent = t('reco_ok');
+        allElements.recommendations.appendChild(p);
     }
 }
 
-/**
- * Updates the UI with KHCO₃ calculation results.
- * @param {number} dose - Calculated dose in grams.
- */
-function updateKhco3Results(dose) {
-    const doseStr = fmt(dose);
-    khco3ResultEl.textContent = `${doseStr} g KHCO₃`;
-    khco3ResultEl.dataset.dose = doseStr;
-    khSplitEl.textContent = splitText(dose);
-    khWarnEl.textContent = ''; // Clear previous warnings if any
+/** Updates all result fields in the UI. */
+function updateAllResults(results) {
+    const t = (key) => translations[currentLang][key] || key;
+    allElements.khco3Result.textContent = `${fmt(results.khDose)} g KHCO₃`;
+    allElements.khco3Result.dataset.dose = fmt(results.khDose);
+    allElements.khSplit.textContent = splitText(results.khDose, currentLang);
+    allElements.equilibriumResult.textContent = results.equilibriumDose > 0 ? `${fmt(results.equilibriumDose)} g Equilibrium` : t('no_dose_needed');
+    allElements.equilibriumResult.dataset.dose = fmt(results.equilibriumDose);
+    allElements.eqSplit.textContent = splitText(results.equilibriumDose, currentLang);
+    allElements.neutralResult.textContent = results.neutralRegulatorDose > 0 ? `${fmt(results.neutralRegulatorDose)} g Neutral Reg.` : t('no_dose_needed');
+    allElements.neutralResult.dataset.dose = fmt(results.neutralRegulatorDose);
+    allElements.nrSplit.textContent = splitText(results.neutralRegulatorDose, currentLang);
+    allElements.acidResult.textContent = results.acidBufferDose > 0 ? `${fmt(results.acidBufferDose)} g Acid Buffer` : t('no_dose_needed');
+    allElements.acidResult.dataset.dose = fmt(results.acidBufferDose);
+    allElements.acidSplit.textContent = splitText(results.acidBufferDose, currentLang);
+    const goldText = results.goldBufferResult.grams > 0 ? `${fmt(results.goldBufferResult.grams)} g Gold Buffer (${results.goldBufferResult.fullDose ? 'full' : 'half'} dose)` : t('no_dose_needed');
+    allElements.goldResult.textContent = goldText;
+    allElements.goldResult.dataset.dose = fmt(results.goldBufferResult.grams);
+    allElements.goldSplit.textContent = splitText(results.goldBufferResult.grams, currentLang);
+    updateTimestamp();
 }
 
-/**
- * Updates the UI with Equilibrium calculation results.
- * @param {number} dose - Calculated dose in grams.
- * @param {boolean} isNeeded - Whether Equilibrium is needed.
- */
-function updateEquilibriumResults(dose, isNeeded) {
-    const doseStr = fmt(dose);
-    equilibriumResultEl.textContent = isNeeded ? `${doseStr} g Equilibrium` : 'No Equilibrium required';
-    equilibriumResultEl.dataset.dose = isNeeded ? doseStr : '0';
-    eqSplitEl.textContent = isNeeded ? splitText(dose) : '';
-}
-
-/**
- * Updates the UI with Neutral Regulator calculation results.
- * @param {number} dose - Calculated dose in grams.
- */
-function updateNeutralRegulatorResults(dose) {
-    const doseStr = fmt(dose);
-    neutralResultEl.textContent = dose > 0 ? `${doseStr} g Neutral Regulator` : 'No Neutral Regulator required';
-    neutralResultEl.dataset.dose = dose > 0 ? doseStr : '0';
-    nrSplitEl.textContent = dose > 0 ? splitText(dose) : '';
-}
-
-/**
- * Updates the UI with Acid Buffer calculation results.
- * @param {number} dose - Calculated dose in grams.
- */
-function updateAcidBufferResults(dose) {
-    const doseStr = fmt(dose);
-    acidResultEl.textContent = dose > 0 ? `${doseStr} g Acid Buffer` : 'No Acid Buffer required';
-    acidResultEl.dataset.dose = dose > 0 ? doseStr : '0';
-    acidSplitEl.textContent = dose > 0 ? splitText(dose) : '';
-}
-
-/**
- * Updates the UI with Gold Buffer calculation results.
- * @param {number} dose - Calculated dose in grams.
- * @param {boolean} fullDose - Whether it's a full dose.
- */
-function updateGoldBufferResults(dose, fullDose) {
-    const doseStr = fmt(dose);
-    goldResultEl.textContent = dose > 0 ? `${doseStr} g Gold Buffer (${fullDose ? 'full' : 'half'} dose)` : 'No Gold Buffer required';
-    goldResultEl.dataset.dose = dose > 0 ? doseStr : '0';
-    goldSplitEl.textContent = dose > 0 ? splitText(dose) : '';
-}
-
-/**
- * Updates the timestamp display.
- */
+/** Updates the timestamp display. */
 function updateTimestamp() {
-    const now = new Date();
-    const ts = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    timestampEl.textContent = `Last calculated at ${ts}`;
+    const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    allElements.timestamp.textContent = `Last calc: ${ts}`;
 }
 
-/**
- * Resets all input fields to their default values and recalculates.
- * @param {function} calculateCallback - The main calculation function to call after reset.
- */
-function handleReset(calculateCallback) {
-    document.querySelectorAll('input[type=number]').forEach(input => {
-        input.value = input.defaultValue;
-    });
-    unitEl.value = 'L'; // Default unit
+/** Resets all inputs to default and recalculates. */
+function handleReset(callbacks) {
+    document.querySelectorAll('input[type=number]').forEach(input => { input.value = input.defaultValue; });
+    allElements.unit.value = 'L';
     localStorage.setItem(LAST_UNIT_KEY, 'L');
-    if (typeof calculateCallback === 'function') {
-        calculateCallback(true); // Recalculate and show errors if any
-    }
+    callbacks.forEach(cb => cb());
 }
 
-/**
- * Generates and triggers download of a CSV file with the results.
- */
+/** Generates and downloads a CSV of the results. */
 function handleCsvDownload() {
     const rows = [
-        ['Parameter', 'Dose (g)', 'Split Dose Info'],
-        ['KHCO₃', khco3ResultEl.dataset.dose || '0', khSplitEl.textContent],
-        ['Equilibrium', equilibriumResultEl.dataset.dose || '0', eqSplitEl.textContent],
-        ['Neutral Regulator', neutralResultEl.dataset.dose || '0', nrSplitEl.textContent],
-        ['Acid Buffer', acidResultEl.dataset.dose || '0', acidSplitEl.textContent],
-        ['Gold Buffer', goldResultEl.dataset.dose || '0', goldSplitEl.textContent],
+        ['Parameter', 'Dose (g)'],
+        ['KHCO3', allElements.khco3Result.dataset.dose || '0'],
+        ['Equilibrium', allElements.equilibriumResult.dataset.dose || '0'],
+        ['Neutral Regulator', allElements.neutralResult.dataset.dose || '0'],
+        ['Acid Buffer', allElements.acidResult.dataset.dose || '0'],
+        ['Gold Buffer', allElements.goldResult.dataset.dose || '0'],
     ];
-    const csvContent = rows.map(r => r.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\r\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'dosing-results.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const csvContent = "data:text/csv;charset=utf-8," + rows.map(r => r.join(',')).join('\r\n');
+    const link = document.createElement('a');
+    link.href = encodeURI(csvContent);
+    link.download = `aquarium-dosing-results-${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
-/**
- * Sets up clipboard copy functionality for result elements.
- */
+/** Sets up clipboard copy functionality. */
 function setupCopyButtons() {
-    const copyPairs = [
-        ['copyKhco3', 'khco3Result'],
-        ['copyEquil', 'equilibriumResult'],
-        ['copyNR', 'neutralResult'],
-        ['copyAcid', 'acidResult'],
-        ['copyGold', 'goldResult'],
-    ];
-    copyPairs.forEach(([btnId, resultId]) => {
-        const button = qs(btnId);
-        const resultEl = qs(resultId);
+    const copyMap = { copyKhco3: 'khco3Result', copyEquil: 'equilibriumResult', copyNR: 'neutralResult', copyAcid: 'acidResult', copyGold: 'goldResult' };
+    for (const btnId in copyMap) {
+        const button = allElements[btnId];
+        const resultEl = allElements[copyMap[btnId]];
         if (button && resultEl) {
-            button.addEventListener('click', () => {
-                const valueToCopy = resultEl.dataset.dose || '0';
-
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(valueToCopy)
-                        .then(() => {
-                            button.textContent = '✔️';
-                            setTimeout(() => { button.textContent = '📋'; }, 900);
-                        })
-                        .catch(err => console.error('Failed to copy: ', err));
-                } else {
-                    // Fallback for older browsers
-                    const textArea = document.createElement("textarea");
-                    textArea.value = valueToCopy;
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    try {
-                        document.execCommand('copy');
-                        button.textContent = '✔️';
-                        setTimeout(() => { button.textContent = '📋'; }, 900);
-                    } catch (err) {
-                        console.error('Fallback copy failed: ', err);
-                    }
-                    document.body.removeChild(textArea);
-                }
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(resultEl.dataset.dose || '0').then(() => {
+                    button.textContent = '✔️';
+                    setTimeout(() => { button.textContent = '📋'; }, 1000);
+                });
             });
         }
+    }
+}
+
+/** Sets up modal functionality. */
+function setupModal() {
+    allElements.changelogBtn.addEventListener('click', () => allElements.changelogModal.style.display = 'flex');
+    allElements.closeChangelog.addEventListener('click', () => allElements.changelogModal.style.display = 'none');
+    allElements.changelogModal.addEventListener('click', (e) => {
+        if (e.target === allElements.changelogModal) allElements.changelogModal.style.display = 'none';
     });
 }
 
-
-/**
- * Initializes all UI event listeners.
- * @param {function} calculateCallback - The main calculation function.
- */
-function initEventListeners(calculateCallback) {
+/** Initializes all UI event listeners. */
+function initEventListeners(callbacks) {
     let debounceTimeout;
     document.body.addEventListener('input', (event) => {
-        if (['number', 'select-one'].includes(event.target.type)) {
+        if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) {
             clearTimeout(debounceTimeout);
-            debounceTimeout = setTimeout(() => calculateCallback(false), 500); // No error scroll on auto-calc
+            debounceTimeout = setTimeout(() => { callbacks.forEach(cb => cb()); }, 350);
         }
     });
-
-    btnCalcEl.addEventListener('click', () => calculateCallback(true));
-    btnResetEl.addEventListener('click', () => handleReset(calculateCallback));
-    btnCsvEl.addEventListener('click', handleCsvDownload);
-
+    allElements.btnCalc.addEventListener('click', () => callbacks.forEach(cb => cb()));
+    allElements.btnReset.addEventListener('click', () => handleReset(callbacks));
+    allElements.btnCsv.addEventListener('click', handleCsvDownload);
     setupCopyButtons();
+    setupModal();
 }
 
-/**
- * Initializes all UI components.
- * @param {function} calculateCallback - The main calculation function for event listeners.
- */
-function initUI(calculateCallback) {
+/** Main UI initialization function. */
+function initUI(callbacks) {
     initDOMReferences();
     setupUnitSelection();
     setupThemeToggle();
-    initEventListeners(calculateCallback); // Pass the main calc function
+    setupLanguageToggle();
+    initEventListeners(callbacks);
 }
