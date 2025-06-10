@@ -1,7 +1,8 @@
 # Aquarium Dosing & Water‑Parameter Calculator
 
-## [![Click hear For Calculator ](https://github.com/GurucharanSavanth/Seachem-Dosing-Calculator/actions/workflows/ci.yml/badge.svg)](https://github.com/GurucharanSavanth/Seachem-Dosing-Calculator/actions/workflows/ci.yml)
-[![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://gurucharansavanth.github.io/Seachem-Dosing-Calculator/)
+## [Click here for Calculator](https://gurucharansavanth.github.io/Seachem-Dosing-Calculator/)
+
+[![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://gurucharansavanth.github.io/Seachem-Dosing-Calculator/)
 
 > **A fast, accessible calculator for precise Seachem and DIY supplement dosing — now with dark mode, bilingual UI (English ⇄ Kannada), and full CI automation.**
 
