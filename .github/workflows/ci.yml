@@ -1,0 +1,55 @@
+# Continuous Integration: multi‑node ▸ cache ▸ ESLint ▸ Jest ▸ Coverage
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: build-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🗃️ Setup Node ${{ matrix.node-version }} & cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: 🔎 Lint (ESLint)
+        run: npx eslint .
+
+      - name: 🧪 Run unit tests + coverage
+        run: npm test -- --coverage --runInBand
+
+      - name: ☂️ Upload coverage artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.node-version }}
+          path: coverage/
+
+  # Optional static analysis job using CodeQL
+  codeql-analysis:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    steps:
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/analyze@v3

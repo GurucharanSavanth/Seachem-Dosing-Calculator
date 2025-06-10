@@ -1,0 +1,48 @@
+// Jest unit tests for core dosing math
+// Run: npx jest
+
+const {
+  calculateKhco3Grams,
+  calculateEquilibriumGrams,
+  calculateNeutralRegulatorGrams,
+  calculateAcidBufferGrams,
+  calculateGoldBufferGrams,
+} = require('../js/dosingCalculations');
+
+/**
+ * Helper to compare floating values with 5‑decimal precision
+ */
+const close = (received, expected, precision = 5) => {
+  expect(received).toBeCloseTo(expected, precision);
+};
+
+describe('Dosing Calculations – Math Audit', () => {
+  /* KHCO3 */
+  it('KHCO3 – nominal case raises 2 dKH in 10 L', () => {
+    close(calculateKhco3Grams(2, 4, 10, 1), 0.35696);
+  });
+
+  /* Equilibrium */
+  it('Equilibrium – raise 3 dGH in 100 L', () => {
+    close(calculateEquilibriumGrams(3, 100), 20);
+  });
+
+  /* Neutral Regulator */
+  it('Neutral Regulator – capping logic, extreme pH drop & high KH', () => {
+    // curPh=9, tgtPh=5, KH=10, L=200 ⇒ should cap at 50 g
+    close(calculateNeutralRegulatorGrams(200, 9, 5, 10), 50);
+  });
+
+  /* Acid Buffer */
+  it('Acid Buffer – nominal 4 dKH drop in 50 L', () => {
+    // Uses updated COEFF_ACID = 0.046875
+    close(calculateAcidBufferGrams(50, 8, 4), 9.375);
+  });
+
+  /* Gold Buffer */
+  it('Gold Buffer – full vs half dose logic', () => {
+    const { grams, fullDose } = calculateGoldBufferGrams(100, 7.0, 7.3);
+    expect(fullDose).toBe(true);
+    expect(grams).toBe(15);
+  });
+});
