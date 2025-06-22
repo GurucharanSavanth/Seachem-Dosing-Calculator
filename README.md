@@ -1,61 +1,158 @@
-# https://gurucharansavanth.github.io/Seachem-Dosing-Calculator/
-# Aquarium Dosing Calculator
+# Aquarium Dosing & Water‑Parameter Calculator
 
-This web application helps aquarium hobbyists calculate the correct amount of various chemical supplements to dose their tanks for adjusting water parameters like KH, GH, and pH.
+## [Click here for Calculator](https://gurucharansavanth.github.io/Seachem-Dosing-Calculator/)
 
-## Project Structure
+[![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://gurucharansavanth.github.io/Seachem-Dosing-Calculator/)
 
+> **A fast, accessible calculator for precise Seachem and DIY supplement dosing — now with dark mode, bilingual UI (English ⇄ Kannada), and full CI automation.**
 
+---
 
+## Table of Contents
+
+* [Features](#features)
+* [Screenshots](#screenshots)
+* [Getting Started](#getting-started)
+* [Usage](#usage)
+* [Project Structure](#project-structure)
+* [Calculation Reference](#calculation-reference)
+* [Accessibility & i18n](#accessibility--i18n)
+* [Testing](#testing)
+* [CI/CD](#cicd)
+* [Contributing](#contributing)
+* [Acknowledgements](#acknowledgements)
+
+---
 
 ## Features
 
-* Calculates dosages for:
-    * Potassium Bicarbonate (KH booster)
-    * Seachem Equilibrium (GH booster)
-    * Seachem Neutral Regulator (pH adjustment)
-    * Seachem Acid Buffer (KH & pH reducer)
-    * Seachem Gold Buffer (Goldfish pH adjustment)
-* Supports Litres, US Gallons, and UK Gallons for tank volume.
-* Dark/Light theme toggle.
-* Results can be copied to the clipboard.
-* Results can be downloaded as a CSV file.
-* Input validation and error display.
-* Debounced auto-calculation on input changes.
-* Responsive design for mobile and desktop.
-* Tooltips for input fields.
-* Unit tests for calculation logic (output to browser console).
+| Category          | Details                                                                                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Supplements**   | Potassium Bicarbonate (**KH Booster**), Seachem **Equilibrium** (GH), **Neutral Regulator** (pH ≈ 7), **Acid Buffer** (KH ↓ & pH ↓), **Gold Buffer** (Goldfish‐specific). |
+| **Units**         | Litres, US Gallons, UK Gallons.                                                                                                                                           |
+| **Live Feedback** | Debounced auto‑calculation ✨; copy‑to‑clipboard; CSV export.                                                                                                              |
+| **Accessibility** | WCAG 2.2 AA colours, full keyboard nav, `aria‑live` results, English + ಕನ್ನಡ toggle.                                                                                      |
+| **Theming**       | One‑click light/dark (prefers‐color‑scheme aware).                                                                                                                        |
+| **Responsive**    | Mobile‑first layout; footer action‑bar for Android/iOS convenience.                                                                                                       |
+| **Reliability**   | Unit‑tested math (Jest); ESLint + Security rules; GitHub Actions CI.                                                                                                      |
 
-## How to Use
 
-1.  Open `index.html` in a web browser.
-2.  Enter your tank volume and select the unit.
-3.  For each supplement you intend to use:
-    * Enter your current water parameter (e.g., Current KH).
-    * Enter your target water parameter (e.g., Target KH).
-    * Enter any other required information (e.g., Purity for KHCO₃).
-4.  The calculator will automatically update the required dosage as you type (after a short delay).
-5.  You can also click "Calculate All Doses" to manually trigger calculations.
-6.  Use the "Reset" button to clear inputs to their default values.
-7.  Use the "Download as CSV" button to save the current results.
-8.  Click the copy icon (📋) next to a result to copy the dosage amount to your clipboard.
 
-## Development Notes
+## Getting Started
 
-* **`js/utils.js`**: Contains shared constants (like conversion factors) and helper functions (e.g., `parseFloatSafe`, `qs` for DOM selection, formatting functions).
-* **`js/dosingCalculations.js`**: Houses the pure calculation functions for each chemical. These functions take numerical inputs and return the calculated dose. They do not interact with the DOM.
-* **`js/uiHandlers.js`**: Manages all interactions with the HTML. This includes:
-    * Reading values from input fields.
-    * Displaying results and error messages.
-    * Setting up event listeners for buttons, theme toggle, etc.
-    * Handling CSV export and clipboard copy.
-* **`js/app.js`**: The entry point of the application.
-    * Initializes the UI and event listeners by calling functions in `uiHandlers.js`.
-    * Contains the main `doCalculations` function which orchestrates the process:
-        1.  Gets input values (via `uiHandlers.js`).
-        2.  Performs validation.
-        3.  Calls the appropriate functions from `dosingCalculations.js`.
-        4.  Displays the results (via `uiHandlers.js`).
-    * Runs unit tests on load.
+### Quick Start (no install)
 
-This modular structure makes the code easier to understand, debug, and extend.
+1. Visit the **\[live demo]** — or
+2. Download the repo and double‑click **`index.html`**.
+
+### Local Dev
+
+```bash
+# Clone & enter
+git clone https://github.com/GurucharanSavanth/Seachem-Dosing-Calculator.git
+cd Seachem-Dosing-Calculator
+
+# Install dev‑deps for linting/testing
+npm ci
+
+# Run tests & linter
+npm test      # Jest
+npm run lint  # ESLint
+```
+
+> A simple static file server (e.g. `npx serve`) is handy for live‑reload previewing.
+
+---
+
+## Usage
+
+1. **Volume** – enter net tank volume & choose unit.
+2. **Supplement panel** – expand, fill *Current* and *Target* values (plus purity for KHCO₃).
+3. Doses update automatically or via the **Calculate Doses** button.
+4. Copy 📋 or **Download CSV** for record‑keeping.
+
+*See in‑app tooltips (`?`) for parameter guidance.*
+
+---
+
+## Project Structure
+
+```text
+├── index.html
+├── css/
+│   └── styles.css            # WCAG‑compliant theme & layout
+├── js/
+│   ├── app.js               # Bootstraps UI, theme, events
+│   ├── utils.js             # Constants, helpers, conversions
+│   ├── dosingCalculations.js# 💡 Pure math — the critical path
+│   ├── uiHandlers.js        # DOM glue & CSV export
+│   └── translations.js      # EN ↔︎ KN strings
+├── tests/                   # Jest specs (math audit)
+```
+
+---
+
+## Calculation Reference
+
+| Function                         | Core Formula (g per L)                           | Source                             |
+| -------------------------------- | ------------------------------------------------ | ---------------------------------- |
+| `calculateKhco3Grams`            | `(ΔdKH × 0.017848 × L) ÷ purity`                 | **Seachem / K‑HCO₃ stoichiometry** |
+| `calculateEquilibriumGrams`      | `ΔdGH × 0.066667 × L`                            | Seachem Equilibrium label          |
+| `calculateNeutralRegulatorGrams` | Adaptive 0.0625–0.125 g/L × KH‑factor × pH‑steps | Seachem guide                      |
+| `calculateAcidBufferGrams`       | `ΔdKH × 0.046875 × L` (**fixed v4.2**)           | Label: 1.5 g/40 L per 0.8 dKH      |
+| `calculateGoldBufferGrams`       | `0.15 × L` (full dose ≥ 0.3 pH)                  | Seachem Gold Buffer                |
+
+All equations are unit‑tested against manufacturer tables and stoichiometric checks (see `tests/`).
+
+---
+
+## Accessibility & i18n
+
+* **Colour** — primary palette darkened to meet 4.5:1 contrast on white (#0059B3).
+* **ARIA** — live regions, labelled controls, focus order preserved.
+* **Keyboard** — fully navigable; copy buttons are standard `<button>`.
+* **Languages** — toggle switches entire UI strings via `translations.js` (English ↔ Kannada).
+
+---
+
+## Testing
+
+* **Jest** (`npm test`) covers every dosing function with edge‑low, nominal, edge‑high cases.
+* **ESLint** (`npm run lint`) enforces Airbnb + `plugin:security/recommended`.
+
+> CI fails if either lint or tests fail — keeping `main` green.
+
+---
+
+## CI/CD
+
+| Stage      | Tool         | Purpose                                              |
+| ---------- | ------------ | ---------------------------------------------------- |
+| **Lint**   | ESLint       | Code quality & security rules                        |
+| **Test**   | Jest         | Math regression suite                                |
+| **Deploy** | GitHub Pages | Auto‑publish `main` → live demo (via Pages settings) |
+
+
+---
+
+## Contributing
+
+1. **Fork** & create a feature branch (`git checkout -b feat/my-fix`).
+2. `npm ci && npm test && npm run lint` — keep it green.
+3. Commit with [Conventional Commits](https://www.conventionalcommits.org/) (`chore:`, `fix:`, `feat:`…).
+4. Open a PR – GitHub Actions will run automatically.
+
+*Need an idea?* See [open issues](../../issues) or suggest improvements!
+
+---
+
+
+## Acknowledgements
+
+* **Seachem Laboratories, Inc.** for publicly documenting dosage guidelines.
+* [WCAG 2.2](https://www.w3.org/TR/WCAG22/) for accessibility standards.
+* [twbs/colors](https://github.com/twbs/colors) inspiration for contrast‑safe palette.
+
+---
+
+> *Not affiliated with Seachem — this is a community tool. Use at your own risk and always double‑check critical doses.*
