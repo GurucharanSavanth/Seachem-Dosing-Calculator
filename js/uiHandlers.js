@@ -1,10 +1,11 @@
-// js/uiHandlers.js v4.1 (Patched)
+// js/uiHandlers.js v5.0 (UI Revamp)
 
 let allElements = {};
 let currentLang = 'en';
 
 /** Initializes all DOM element references into a central object. */
 function initDOMReferences() {
+    // This list is verified to be compatible with the revamped index.html
     const ids = [
         'themeToggle', 'langToggle', 'timestamp', 'errors', 'changelogBtn', 'changelogModal', 'closeChangelog',
         'recommendations', 'paramAmmonia', 'statusAmmonia', 'paramNitrate', 'statusNitrate',
@@ -61,8 +62,7 @@ function translatePage() {
         const translation = translations[currentLang][key];
 
         if (translation) {
-            // SECURITY REFACTOR: Check if the key indicates HTML content is expected.
-            // This is a pragmatic compromise to avoid a full i18n library.
+            // SECURITY REFACTOR from original code is preserved.
             // It's safer because we explicitly control which keys can contain HTML.
             const isHtmlContent = key.startsWith('reco_') || key === 'changelog_list';
             if (isHtmlContent) {
@@ -73,6 +73,7 @@ function translatePage() {
         }
     });
     // Manually trigger a recalculation to update dynamic result text.
+    handleParameterStatusUpdate(); // This needs to run before doDosingCalculations
     doDosingCalculations();
 }
 
@@ -96,7 +97,7 @@ function getAllInputValues() {
 
 /** Displays validation errors or clears them. */
 function displayErrors(errorMessages) {
-    allElements.errors.textContent = errorMessages.length > 0 ? errorMessages.join(' • ') : '';
+    allElements.errors.innerHTML = errorMessages.length > 0 ? errorMessages.join(' &bull; ') : '';
     if (errorMessages.length > 0) allElements.errors.focus();
 }
 
@@ -112,11 +113,15 @@ function handleParameterStatusUpdate() {
         }
         return text;
     };
+    
+    const updateStatus = (element, className, textKey) => {
+        element.className = 'status-badge ' + className;
+        element.textContent = t(textKey);
+    };
 
     // Ammonia
     if (inputs.paramAmmonia > 0) {
-        allElements.statusAmmonia.className = 'status-indicator warn';
-        allElements.statusAmmonia.textContent = t('status_danger');
+        updateStatus(allElements.statusAmmonia, 'warn', 'status_danger');
         recommendations.push(t('reco_ammonia_detected'));
         if (litres > 0) {
             const primeDose = calculatePrimeDose(litres);
@@ -125,63 +130,58 @@ function handleParameterStatusUpdate() {
             recommendations.push(t('reco_volume_needed'));
         }
     } else {
-        allElements.statusAmmonia.className = 'status-indicator good';
-        allElements.statusAmmonia.textContent = t('status_good');
+        updateStatus(allElements.statusAmmonia, 'good', 'status_good');
     }
 
     // Nitrite
     if (inputs.paramNitrite > 0) {
-        allElements.statusNitrite.className = 'status-indicator warn';
-        allElements.statusNitrite.textContent = t('status_danger');
+        updateStatus(allElements.statusNitrite, 'warn', 'status_danger');
         recommendations.push(t('reco_nitrite_detected'));
         if (litres > 0) {
             const stabilityDose = calculateStabilityDose(litres);
             recommendations.push(t('reco_stability_dose', {stabilityDose: fmt(stabilityDose)}));
         }
     } else {
-        allElements.statusNitrite.className = 'status-indicator good';
-        allElements.statusNitrite.textContent = t('status_good');
+        updateStatus(allElements.statusNitrite, 'good', 'status_good');
     }
 
     // Nitrate
     if (inputs.paramNitrate > 50) {
-        allElements.statusNitrate.className = 'status-indicator warn';
-        allElements.statusNitrate.textContent = t('status_high');
+        updateStatus(allElements.statusNitrate, 'warn', 'status_high');
         recommendations.push(t('reco_nitrate_high'));
     } else {
-        allElements.statusNitrate.className = 'status-indicator good';
-        allElements.statusNitrate.textContent = t('status_good');
+        updateStatus(allElements.statusNitrate, 'good', 'status_good');
     }
     
     // GH
     const dGH = ppmToDh(inputs.paramGh);
-    allElements.statusGh.className = 'status-indicator info';
+    allElements.statusGh.className = 'status-badge'; // It's just info
     allElements.statusGh.textContent = `${fmt(dGH, 1)} °dGH`;
     allElements.ghCurrent.value = fmt(dGH, 2);
-    if (inputs.paramGh < 40 && inputs.paramGh > 0) {
+    if (dGH < 3 && dGH > 0) { // Using dGH for recommendation
         recommendations.push(t('reco_gh_low'));
     }
 
     // KH
     const dKH = ppmToDh(inputs.paramKh);
-    allElements.statusKh.className = 'status-indicator info';
+    allElements.statusKh.className = 'status-badge'; // It's just info
     allElements.statusKh.textContent = `${fmt(dKH, 1)} °dKH`;
     [allElements.khCurrent, allElements.nrKh, allElements.acidCurrentKh].forEach(el => el.value = fmt(dKH, 2));
-    if (inputs.paramKh < 40 && inputs.paramKh > 0) {
+    if (dKH < 3 && dKH > 0) { // Using dKH for recommendation
         recommendations.push(t('reco_kh_low'));
     }
 
-    // SECURITY REFACTOR: Build recommendation list using DOM methods instead of a single innerHTML string.
-    allElements.recommendations.innerHTML = ''; // Clear previous recommendations
+    // Build recommendation list using DOM methods
+    allElements.recommendations.innerHTML = ''; // Clear previous
     if (recommendations.length > 0) {
         recommendations.forEach(rec => {
             const p = document.createElement('p');
-            p.innerHTML = rec; // Still using innerHTML here as translations contain <strong> tags.
+            p.innerHTML = rec; // Using innerHTML as translations contain <strong>
             allElements.recommendations.appendChild(p);
         });
     } else {
         const p = document.createElement('p');
-        p.textContent = t('reco_ok');
+        p.innerHTML = t('reco_ok');
         allElements.recommendations.appendChild(p);
     }
 }
@@ -190,20 +190,24 @@ function handleParameterStatusUpdate() {
 function updateAllResults(results) {
     const t = (key) => translations[currentLang][key] || key;
     allElements.khco3Result.textContent = `${fmt(results.khDose)} g KHCO₃`;
-    allElements.khco3Result.dataset.dose = fmt(results.khDose);
+    allElements.khco3Result.dataset.dose = fmt(results.khDose, 4); // more precision for copy
     allElements.khSplit.textContent = splitText(results.khDose, currentLang);
+    
     allElements.equilibriumResult.textContent = results.equilibriumDose > 0 ? `${fmt(results.equilibriumDose)} g Equilibrium` : t('no_dose_needed');
-    allElements.equilibriumResult.dataset.dose = fmt(results.equilibriumDose);
+    allElements.equilibriumResult.dataset.dose = fmt(results.equilibriumDose, 4);
     allElements.eqSplit.textContent = splitText(results.equilibriumDose, currentLang);
+    
     allElements.neutralResult.textContent = results.neutralRegulatorDose > 0 ? `${fmt(results.neutralRegulatorDose)} g Neutral Reg.` : t('no_dose_needed');
-    allElements.neutralResult.dataset.dose = fmt(results.neutralRegulatorDose);
+    allElements.neutralResult.dataset.dose = fmt(results.neutralRegulatorDose, 4);
     allElements.nrSplit.textContent = splitText(results.neutralRegulatorDose, currentLang);
+    
     allElements.acidResult.textContent = results.acidBufferDose > 0 ? `${fmt(results.acidBufferDose)} g Acid Buffer` : t('no_dose_needed');
-    allElements.acidResult.dataset.dose = fmt(results.acidBufferDose);
+    allElements.acidResult.dataset.dose = fmt(results.acidBufferDose, 4);
     allElements.acidSplit.textContent = splitText(results.acidBufferDose, currentLang);
+    
     const goldText = results.goldBufferResult.grams > 0 ? `${fmt(results.goldBufferResult.grams)} g Gold Buffer (${results.goldBufferResult.fullDose ? 'full' : 'half'} dose)` : t('no_dose_needed');
     allElements.goldResult.textContent = goldText;
-    allElements.goldResult.dataset.dose = fmt(results.goldBufferResult.grams);
+    allElements.goldResult.dataset.dose = fmt(results.goldBufferResult.grams, 4);
     allElements.goldSplit.textContent = splitText(results.goldBufferResult.grams, currentLang);
     updateTimestamp();
 }
@@ -216,7 +220,10 @@ function updateTimestamp() {
 
 /** Resets all inputs to default and recalculates. */
 function handleReset(callbacks) {
-    document.querySelectorAll('input[type=number]').forEach(input => { input.value = input.defaultValue; });
+    document.querySelectorAll('input[type=number]').forEach(input => { input.value = input.defaultValue || 0; });
+    document.querySelectorAll('input.param-input').forEach(input => { input.value = input.defaultValue || 0; });
+    allElements.volume.value = 40;
+    allElements.khPurity.value = 0.99;
     allElements.unit.value = 'L';
     localStorage.setItem(LAST_UNIT_KEY, 'L');
     callbacks.forEach(cb => cb());
@@ -250,9 +257,13 @@ function setupCopyButtons() {
         if (button && resultEl) {
             button.addEventListener('click', (e) => {
                 e.stopPropagation();
-                navigator.clipboard.writeText(resultEl.dataset.dose || '0').then(() => {
-                    button.textContent = '✔️';
-                    setTimeout(() => { button.textContent = '📋'; }, 1000);
+                const textToCopy = resultEl.dataset.dose || '0';
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const icon = button.querySelector('span');
+                    if (icon) {
+                        icon.textContent = '✔️';
+                        setTimeout(() => { icon.textContent = '📋'; }, 1200);
+                    }
                 });
             });
         }
