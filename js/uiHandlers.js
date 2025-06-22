@@ -29,7 +29,7 @@ function setupUnitSelection() {
         option.textContent = text;
         allElements.unit.appendChild(option);
     });
-    allElements.unit.value = localStorage.getItem(LAST_UNIT_KEY) || 'L';
+    allElements.unit.value = localStorage.getItem(LAST_UNIT_KEY) || 'UK';
     allElements.unit.addEventListener('change', () => localStorage.setItem(LAST_UNIT_KEY, allElements.unit.value));
 }
 
@@ -222,10 +222,10 @@ function updateTimestamp() {
 function handleReset(callbacks) {
     document.querySelectorAll('input[type=number]').forEach(input => { input.value = input.defaultValue || 0; });
     document.querySelectorAll('input.param-input').forEach(input => { input.value = input.defaultValue || 0; });
-    allElements.volume.value = 40;
+    allElements.volume.value = 10;
     allElements.khPurity.value = 0.99;
     allElements.unit.value = 'L';
-    localStorage.setItem(LAST_UNIT_KEY, 'L');
+    localStorage.setItem(LAST_UNIT_KEY, 'UK');
     callbacks.forEach(cb => cb());
 }
 
