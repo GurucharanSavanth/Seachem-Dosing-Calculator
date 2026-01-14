@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aquarium Calculator v4.1 - Dosing & Parameters</title>
+    <title>Aquarium Calculator v5.0 - Dosing & Parameters</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,6 +36,9 @@
                 <button id="themeToggle" class="control-btn theme-btn" title="Toggle dark mode" aria-label="Toggle dark mode">
                     <span class="theme-icon">🌓</span>
                 </button>
+                <button id="menuToggle" class="control-btn menu-btn" title="Menu" aria-label="Open menu" aria-expanded="false">
+                    <span class="menu-icon">☰</span>
+                </button>
             </div>
         </div>
     </header>
@@ -54,7 +57,7 @@
                         <div class="param-item">
                             <label for="paramAmmonia" data-lang-key="param_ammonia_label">Ammonia (NH₃/NH₄⁺)</label>
                             <div class="input-wrapper">
-                                <input type="number" id="paramAmmonia" min="0" step="0.1" value="0" class="param-input">
+                                <input type="number" id="paramAmmonia" min="0" step="1" value="0" class="param-input" inputmode="numeric">
                                 <span class="input-unit">ppm</span>
                             </div>
                             <div id="statusAmmonia" class="status-badge"></div>
@@ -72,26 +75,34 @@
                         <div class="param-item">
                             <label for="paramNitrite" data-lang-key="param_nitrite_label">Nitrite (NO₂)</label>
                             <div class="input-wrapper">
-                                <input type="number" id="paramNitrite" min="0" step="0.1" value="0" class="param-input">
+                                <input type="number" id="paramNitrite" min="0" step="1" value="0" class="param-input" inputmode="numeric">
                                 <span class="input-unit">ppm</span>
                             </div>
                             <div id="statusNitrite" class="status-badge"></div>
                         </div>
                         
-                        <div class="param-item">
+                        <div class="param-item has-toggle">
                             <label for="paramGh" data-lang-key="param_gh_label">General Hardness (GH)</label>
                             <div class="input-wrapper">
-                                <input type="number" id="paramGh" min="0" step="1" value="150" class="param-input">
-                                <span class="input-unit">ppm</span>
+                                <input type="number" id="paramGh" min="0" step="1" value="4" class="param-input" inputmode="numeric">
+                                <span class="input-unit" id="ghUnit">dGH</span>
+                            </div>
+                            <div class="unit-toggle-group">
+                                <button type="button" class="unit-toggle-btn active" data-unit="dh" data-param="gh" aria-pressed="true">dGH</button>
+                                <button type="button" class="unit-toggle-btn" data-unit="ppm" data-param="gh" aria-pressed="false">PPM</button>
                             </div>
                             <div id="statusGh" class="status-badge"></div>
                         </div>
                         
-                        <div class="param-item">
+                        <div class="param-item has-toggle">
                             <label for="paramKh" data-lang-key="param_kh_label">Carbonate Hardness (KH)</label>
                             <div class="input-wrapper">
-                                <input type="number" id="paramKh" min="0" step="1" value="100" class="param-input">
-                                <span class="input-unit">ppm</span>
+                                <input type="number" id="paramKh" min="0" step="1" value="6" class="param-input" inputmode="numeric">
+                                <span class="input-unit" id="khUnit">dKH</span>
+                            </div>
+                            <div class="unit-toggle-group">
+                                <button type="button" class="unit-toggle-btn active" data-unit="dh" data-param="kh" aria-pressed="true">dKH</button>
+                                <button type="button" class="unit-toggle-btn" data-unit="ppm" data-param="kh" aria-pressed="false">PPM</button>
                             </div>
                             <div id="statusKh" class="status-badge"></div>
                         </div>
@@ -123,14 +134,46 @@
                         <h3 data-lang-key="water_volume_title">Water Volume</h3>
                     </div>
                     <div class="card-content">
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label for="volume" data-lang-key="net_volume_label">Net Water Volume</label>
-                                <input type="number" id="volume" min="0.1" step="0.01" value="10" required class="styled-input">
+                        <div class="volume-mode-toggle">
+                            <button type="button" class="vol-mode-btn active" data-mode="direct" aria-pressed="true">Direct Entry</button>
+                            <button type="button" class="vol-mode-btn" data-mode="lbh" aria-pressed="false">L×B×H</button>
+                        </div>
+
+                        <div id="directVolumeSection" class="volume-section">
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="volume" data-lang-key="net_volume_label">Net Water Volume</label>
+                                    <input type="number" id="volume" min="0.1" step="0.01" value="10" required class="styled-input">
+                                </div>
+                                <div class="input-group">
+                                    <label for="unit" data-lang-key="unit_label">Unit</label>
+                                    <select id="unit" class="styled-select"></select>
+                                </div>
                             </div>
-                            <div class="input-group">
-                                <label for="unit" data-lang-key="unit_label">Unit</label>
-                                <select id="unit" class="styled-select"></select>
+                        </div>
+
+                        <div id="lbhVolumeSection" class="volume-section" style="display: none;">
+                            <div class="dim-unit-toggle">
+                                <button type="button" class="dim-unit-btn active" data-unit="cm" aria-pressed="true">cm</button>
+                                <button type="button" class="dim-unit-btn" data-unit="in" aria-pressed="false">in</button>
+                                <button type="button" class="dim-unit-btn" data-unit="ft" aria-pressed="false">ft</button>
+                            </div>
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="dimLength">Length</label>
+                                    <input type="number" id="dimLength" min="0" step="0.1" value="60" class="styled-input">
+                                </div>
+                                <div class="input-group">
+                                    <label for="dimBreadth">Breadth</label>
+                                    <input type="number" id="dimBreadth" min="0" step="0.1" value="30" class="styled-input">
+                                </div>
+                                <div class="input-group">
+                                    <label for="dimHeight">Height</label>
+                                    <input type="number" id="dimHeight" min="0" step="0.1" value="40" class="styled-input">
+                                </div>
+                            </div>
+                            <div class="calculated-volume">
+                                <span>Calculated: </span><strong id="calculatedVolume">72.00</strong><span> L</span>
                             </div>
                         </div>
                     </div>
@@ -155,7 +198,7 @@
                                 </div>
                                 <div class="input-group">
                                     <label for="khTarget" data-lang-key="target_kh_label">Target KH (°dKH)</label>
-                                    <input type="number" id="khTarget" min="0" max="30" step="0.01" value="6.0" required class="styled-input">
+                                    <input type="number" id="khTarget" min="0" max="30" step="0.01" value="4.5" required class="styled-input">
                                 </div>
                                 <div class="input-group">
                                     <label for="khPurity" data-lang-key="purity_label">Purity (0.5-1.0)</label>
@@ -188,11 +231,11 @@
                             <div class="input-row">
                                 <div class="input-group">
                                     <label for="ghCurrent" data-lang-key="current_gh_label">Current GH (°dGH)</label>
-                                    <input type="number" id="ghCurrent" min="0" max="40" step="0.01" value="8.4" required class="styled-input">
+                                    <input type="number" id="ghCurrent" min="0" max="40" step="0.01" value="4" required class="styled-input">
                                 </div>
                                 <div class="input-group">
                                     <label for="ghTarget" data-lang-key="target_gh_label">Target GH (°dGH)</label>
-                                    <input type="number" id="ghTarget" min="0" max="40" step="0.01" value="7.5" required class="styled-input">
+                                    <input type="number" id="ghTarget" min="0" max="40" step="0.01" value="6" required class="styled-input">
                                 </div>
                             </div>
                             <div class="result-container">
@@ -208,10 +251,63 @@
                     </details>
                 </div>
 
-                <div class="dosing-card glass-card" id="neutral-card">
+                <div class="dosing-card glass-card" id="safe-card">
                     <details>
                         <summary class="dosing-summary">
                             <span class="step-number">4</span>
+                            <div class="summary-content">
+                                <h3 data-lang-key="safe_title">Water Conditioner (Seachem Safe)</h3>
+                                <div class="summary-icon">🛡️</div>
+                            </div>
+                        </summary>
+                        <div class="details-content">
+                            <p class="product-info">Removes chlorine, chloramine & detoxifies ammonia. Dose: 1g per 200L.</p>
+                            <div class="result-container">
+                                <div class="result-display">
+                                    <div class="result" id="safeResult" aria-live="polite"></div>
+                                    <button type="button" class="copy-btn" id="copySafe" title="Copy result" aria-label="Copy Safe result">
+                                        <span>📋</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="dosing-card glass-card" id="apt-card">
+                    <details>
+                        <summary class="dosing-summary">
+                            <span class="step-number">5</span>
+                            <div class="summary-content">
+                                <h3 data-lang-key="apt_title">Plant Fertilizer (APT Complete)</h3>
+                                <div class="summary-icon">🌿</div>
+                            </div>
+                        </summary>
+                        <div class="details-content">
+                            <p class="product-info">80% of standard dose (3ml/100L). Uses current nitrate for estimation.</p>
+                            <div class="result-container">
+                                <div class="result-display">
+                                    <div class="result" id="aptResult" aria-live="polite"></div>
+                                    <button type="button" class="copy-btn" id="copyApt" title="Copy result" aria-label="Copy APT result">
+                                        <span>📋</span>
+                                    </button>
+                                </div>
+                                <div class="nitrate-estimate" id="nitrateEstimate"></div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="advanced-buffers-section hidden-section" id="advancedBuffersSection">
+                    <div class="section-divider">
+                        <span>Advanced Buffers</span>
+                    </div>
+                </div>
+
+                <div class="dosing-card glass-card advanced-buffer hidden-section" id="neutral-card">
+                    <details>
+                        <summary class="dosing-summary">
+                            <span class="step-number">6</span>
                             <div class="summary-content">
                                 <h3 data-lang-key="ph_neutralizer_title">pH Neutralizer (Seachem Neutral Regulator)</h3>
                                 <div class="summary-icon">⚖️</div>
@@ -245,10 +341,10 @@
                     </details>
                 </div>
 
-                <div class="dosing-card glass-card" id="acid-card">
+                <div class="dosing-card glass-card advanced-buffer hidden-section" id="acid-card">
                     <details>
                         <summary class="dosing-summary">
-                            <span class="step-number">5</span>
+                            <span class="step-number">7</span>
                             <div class="summary-content">
                                 <h3 data-lang-key="kh_reducer_title">KH & pH Reducer (Seachem Acid Buffer)</h3>
                                 <div class="summary-icon">🔻</div>
@@ -278,10 +374,10 @@
                     </details>
                 </div>
 
-                <div class="dosing-card glass-card" id="gold-card">
+                <div class="dosing-card glass-card advanced-buffer hidden-section" id="gold-card">
                     <details>
                         <summary class="dosing-summary">
-                            <span class="step-number">6</span>
+                            <span class="step-number">8</span>
                             <div class="summary-content">
                                 <h3 data-lang-key="goldfish_buffer_title">Goldfish Buffer (Seachem Gold Buffer)</h3>
                                 <div class="summary-icon">🥇</div>
@@ -314,25 +410,69 @@
         </section>
     </main>
 
-    <footer class="main-footer">
+    <!-- Hamburger Menu Overlay -->
+    <div id="menuOverlay" class="menu-overlay"></div>
+
+    <!-- Hamburger Menu Panel -->
+    <aside id="menuPanel" class="menu-panel" aria-hidden="true">
+        <div class="menu-header">
+            <h2>Settings & Options</h2>
+            <button id="closeMenu" class="menu-close-btn" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="menu-body">
+            <div class="menu-section">
+                <h3>Appearance</h3>
+                <div class="menu-item">
+                    <span>Theme</span>
+                    <div class="menu-toggle-group">
+                        <button type="button" class="menu-toggle-btn" id="menuThemeLight" data-theme="light">Light</button>
+                        <button type="button" class="menu-toggle-btn active" id="menuThemeDark" data-theme="dark">Dark</button>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <span>Language</span>
+                    <div class="menu-toggle-group">
+                        <button type="button" class="menu-toggle-btn active" id="menuLangEn" data-lang="en">EN</button>
+                        <button type="button" class="menu-toggle-btn" id="menuLangKn" data-lang="kn">ಕನ್ನಡ</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <h3>Advanced Buffers</h3>
+                <p class="menu-hint">These buffers are available in the Dosing Calculators section below.</p>
+                <ul class="buffer-list">
+                    <li><a href="#neutral-card" class="menu-link" data-card="neutral-card">pH Neutralizer (Neutral Regulator)</a></li>
+                    <li><a href="#acid-card" class="menu-link" data-card="acid-card">KH & pH Reducer (Acid Buffer)</a></li>
+                    <li><a href="#gold-card" class="menu-link" data-card="gold-card">Goldfish Buffer (Gold Buffer)</a></li>
+                </ul>
+            </div>
+
+            <div class="menu-section">
+                <h3>Actions</h3>
+                <div class="menu-actions">
+                    <button id="menuDownloadCsv" class="menu-action-btn">
+                        <span class="btn-icon">📊</span> Download CSV
+                    </button>
+                    <button id="menuReset" class="menu-action-btn danger">
+                        <span class="btn-icon">🔄</span> Reset All
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <h3>About</h3>
+                <p class="menu-version">Aquarium Calculator v5.0</p>
+                <button id="menuChangelog" class="menu-action-btn small">View Changelog</button>
+            </div>
+        </div>
+    </aside>
+
+    <footer class="main-footer static">
         <div class="footer-content">
             <div class="footer-info">
                 <span id="timestamp" class="timestamp"></span>
-                <button id="changelogBtn" class="link-btn" data-lang-key="changelog_btn">v4.1 Changelog</button>
-            </div>
-            <div class="footer-actions">
-                <button id="btnCalc" class="action-btn primary" data-lang-key="calculate_btn">
-                    <span class="btn-icon">⚡</span>
-                    <span class="btn-text">Calculate Doses</span>
-                </button>
-                <button id="btnCsv" class="action-btn secondary" data-lang-key="download_csv_btn">
-                    <span class="btn-icon">📊</span>
-                    <span class="btn-text">Download CSV</span>
-                </button>
-                <button id="btnReset" class="action-btn danger" data-lang-key="reset_btn">
-                    <span class="btn-icon">🔄</span>
-                    <span class="btn-text">Reset All</span>
-                </button>
+                <span class="version-tag">v5.0</span>
             </div>
         </div>
     </footer>
@@ -341,11 +481,21 @@
         <div class="modal-content">
             <button id="closeChangelog" class="modal-close-btn">&times;</button>
             <div class="modal-header">
-                <h2 data-lang-key="changelog_title">Version 4.1 Changelog</h2>
+                <h2 data-lang-key="changelog_title">Version 5.0 Changelog</h2>
             </div>
             <div class="modal-body">
-                <ul data-lang-key="changelog_list">
-                    </ul>
+                <ul class="changelog-list">
+                    <li><strong>New:</strong> Stoichiometric KHCO3 calculation using molecular weight (100.115 g/mol)</li>
+                    <li><strong>New:</strong> LxBxH tank dimension calculator with cm/in/ft units</li>
+                    <li><strong>New:</strong> Seachem Safe water conditioner dosing</li>
+                    <li><strong>New:</strong> APT Complete fertilizer (80% dose with nitrate estimation)</li>
+                    <li><strong>New:</strong> Hamburger menu with settings and advanced buffers</li>
+                    <li><strong>Improved:</strong> All calculations precision to 0.0001</li>
+                    <li><strong>Improved:</strong> GH/KH toggle between dGH/dKH and PPM</li>
+                    <li><strong>Improved:</strong> Default volume unit changed to US Gallons</li>
+                    <li><strong>UI:</strong> Static footer, minimalist modern design</li>
+                    <li><strong>UI:</strong> Auto-calculation on input (no button needed)</li>
+                </ul>
             </div>
         </div>
     </div>

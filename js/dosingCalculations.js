@@ -1,19 +1,25 @@
-// js/dosingCalculations.js v4.1 (Patched)
+// js/dosingCalculations.js v5.0 (High Precision)
 
 /**
- * Calculates grams of Potassium Bicarbonate (KHCO₃) needed.
+ * Calculates grams of Potassium Bicarbonate (KHCO₃) needed using stoichiometric formula.
+ *
+ * STOICHIOMETRIC CALCULATION:
+ * - KHCO₃ Molecular Weight = 100.115 g/mol
+ * - 1 dKH = 17.86 mg/L as CaCO₃ = 0.357 meq/L alkalinity
+ * - Since CaCO₃ provides 2 eq/mol and KHCO₃ provides 1 eq/mol:
+ * - KHCO₃ needed = 0.357 mmol/L × 100.115 mg/mmol = 35.74 mg/L per dKH
+ * - Coefficient = 0.0357 g/L per dKH
+ *
  * @param {number} currentKh - Current KH in dKH.
  * @param {number} targetKh - Target KH in dKH.
  * @param {number} litres - Water volume in litres.
  * @param {number} purity - Purity of the KHCO₃ compound (0.5 to 1.0).
- * @returns {number} Grams of KHCO₃ to dose.
+ * @returns {number} Grams of KHCO₃ to dose (precision: 0.0001).
  */
 function calculateKhco3Grams(currentKh, targetKh, litres, purity) {
-    if (purity === 0) return 0;
-    // FIX: Replaced the incorrect constant (0.017848) with the scientifically accepted
-    // coefficient for KHCO₃ dosing, which accounts for molecular weight. This prevents underdosing.
-    const COEFF_KHCO3 = 0.02985; // Grams needed per litre to raise KH by 1 dKH.
-    const grams = (targetKh - currentKh) * COEFF_KHCO3 * litres / purity;
+    if (purity <= 0 || !isFinite(purity)) return 0;
+    // Using stoichiometric coefficient based on molecular weight
+    const grams = (targetKh - currentKh) * COEFF_KHCO3_STOICH * litres / purity;
     return Math.max(0, grams);
 }
 
@@ -98,4 +104,44 @@ function calculatePrimeDose(litres) {
  */
 function calculateStabilityDose(litres) {
     return litres * STABILITY_ML_PER_L;
+}
+
+// --- Additional Product Calculations ---
+
+/**
+ * Calculates grams of Seachem Safe needed for chlorine/chloramine removal.
+ * Official dosing: 1g per 200L removes up to 4 ppm chlorine/chloramine.
+ *
+ * @param {number} litres - Water volume in litres.
+ * @returns {number} Grams of Seachem Safe to dose (precision: 0.0001).
+ */
+function calculateSafeGrams(litres) {
+    const grams = litres * COEFF_SAFE;
+    return Math.max(0, grams);
+}
+
+/**
+ * Calculates mL of APT Complete (2Hr Aquarist) fertilizer needed.
+ * Standard dosing: 3ml per 100L daily.
+ * This returns 80% of standard dose as per user preference.
+ *
+ * Also provides rough nitrate increase estimation.
+ *
+ * @param {number} litres - Water volume in litres.
+ * @param {number} currentNitrate - Current nitrate reading in ppm (for estimation).
+ * @returns {object} Object with { ml, estimatedNitrateIncrease, estimatedFinalNitrate }
+ */
+function calculateAptCompleteDose(litres, currentNitrate = 0) {
+    const ml = litres * COEFF_APT_80PCT;
+    // Rough estimate: ~1.5 ppm NO3 increase per ml per 100L
+    const estimatedNitrateIncrease = (ml / 100) * APT_NITRATE_EST_PER_ML * 100;
+    // Simplified: per liter dose contributes roughly 0.015 ppm per ml
+    const perLiterContribution = ml * 0.015;
+    const estimatedFinalNitrate = currentNitrate + perLiterContribution;
+
+    return {
+        ml: Math.max(0, ml),
+        estimatedNitrateIncrease: Math.max(0, perLiterContribution),
+        estimatedFinalNitrate: Math.max(0, estimatedFinalNitrate)
+    };
 }

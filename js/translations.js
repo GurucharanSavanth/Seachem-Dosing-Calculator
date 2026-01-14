@@ -1,4 +1,4 @@
-// js/translations.js v4.1 (Patched)
+// js/translations.js v5.0
 
 const translations = {
     en: {
@@ -30,9 +30,11 @@ const translations = {
         unit_label: "Unit",
         kh_booster_title: "2. KH Booster (Potassium Bicarbonate)",
         gh_booster_title: "3. GH Booster (Seachem Equilibrium)",
-        ph_neutralizer_title: "4. pH Neutralizer (Seachem Neutral Regulator)",
-        kh_reducer_title: "5. KH & pH Reducer (Seachem Acid Buffer)",
-        goldfish_buffer_title: "6. Goldfish Buffer (Seachem Gold Buffer)",
+        safe_title: "4. Water Conditioner (Seachem Safe)",
+        apt_title: "5. Plant Fertilizer (APT Complete)",
+        ph_neutralizer_title: "6. pH Neutralizer (Seachem Neutral Regulator)",
+        kh_reducer_title: "7. KH & pH Reducer (Seachem Acid Buffer)",
+        goldfish_buffer_title: "8. Goldfish Buffer (Seachem Gold Buffer)",
         current_kh_label: "Current KH (°dKH)",
         target_kh_label: "Target KH (°dKH)",
         purity_label: "Purity (0.5-1.0)",
@@ -41,17 +43,19 @@ const translations = {
         current_ph_label: "Current pH",
         target_ph_label: "Target pH",
         no_dose_needed: "No dose needed",
-        changelog_btn: "v4.1 Changelog",
+        changelog_btn: "v5.0 Changelog",
         calculate_btn: "Calculate Doses",
         download_csv_btn: "Download CSV",
         reset_btn: "Reset All",
-        changelog_title: "Version 4.1 Changelog",
+        changelog_title: "Version 5.0 Changelog",
         changelog_list: `
-            <li><strong>CRITICAL FIX:</strong> Corrected Seachem Acid Buffer calculation to prevent a ~300% overdose.</li>
-            <li><strong>CRITICAL FIX:</strong> Corrected Potassium Bicarbonate (KH Booster) calculation to prevent underdosing.</li>
-            <li><strong>Accessibility:</strong> Improved color contrast of UI elements to meet WCAG AA standards.</li>
-            <li><strong>UI Scaling:</strong> Implemented fluid typography and more responsive layouts for better viewing on mobile devices and varied aspect ratios.</li>
-            <li>Minor code quality and security improvements.</li>
+            <li><strong>New:</strong> Stoichiometric KHCO3 calculation using molecular weight (100.115 g/mol)</li>
+            <li><strong>New:</strong> LxBxH tank dimension calculator with cm/in/ft units</li>
+            <li><strong>New:</strong> Seachem Safe water conditioner dosing</li>
+            <li><strong>New:</strong> APT Complete fertilizer (80% dose with nitrate estimation)</li>
+            <li><strong>New:</strong> Hamburger menu with settings and advanced buffers</li>
+            <li><strong>Improved:</strong> All calculations precision to 0.0001</li>
+            <li><strong>UI:</strong> Static footer, minimalist modern design</li>
         `
     },
     kn: {
@@ -83,9 +87,11 @@ const translations = {
         unit_label: "ಘಟಕ",
         kh_booster_title: "೨. KH ಬೂಸ್ಟರ್ (ಪೊಟ್ಯಾಸಿಯಮ್ ಬೈಕಾರ್ಬನೇಟ್)",
         gh_booster_title: "೩. GH ಬೂಸ್ಟರ್ (ಸೀಕೆಮ್ ಇಕ್ವಿಲಿಬ್ರಿಯಂ)",
-        ph_neutralizer_title: "೪. pH ನ್ಯೂಟ್ರಾಲೈಜರ್ (ಸೀಕೆಮ್ ನ್ಯೂಟ್ರಲ್ ರೆಗ್ಯುಲೇಟರ್)",
-        kh_reducer_title: "೫. KH ಮತ್ತು pH ರಿಡ್ಯೂಸರ್ (ಸೀಕೆಮ್ ಆಸಿಡ್ ಬಫರ್)",
-        goldfish_buffer_title: "೬. ಗೋಲ್ಡ್ ಫಿಶ್ ಬಫರ್ (ಸೀಕೆಮ್ ಗೋಲ್ಡ್ ಬಫರ್)",
+        safe_title: "೪. ನೀರಿನ ಕಂಡೀಷನರ್ (ಸೀಕೆಮ್ ಸೇಫ್)",
+        apt_title: "೫. ಸಸ್ಯ ರಸಗೊಬ್ಬರ (APT ಕಂಪ್ಲೀಟ್)",
+        ph_neutralizer_title: "೬. pH ನ್ಯೂಟ್ರಾಲೈಜರ್ (ಸೀಕೆಮ್ ನ್ಯೂಟ್ರಲ್ ರೆಗ್ಯುಲೇಟರ್)",
+        kh_reducer_title: "೭. KH ಮತ್ತು pH ರಿಡ್ಯೂಸರ್ (ಸೀಕೆಮ್ ಆಸಿಡ್ ಬಫರ್)",
+        goldfish_buffer_title: "೮. ಗೋಲ್ಡ್ ಫಿಶ್ ಬಫರ್ (ಸೀಕೆಮ್ ಗೋಲ್ಡ್ ಬಫರ್)",
         current_kh_label: "ಪ್ರಸ್ತುತ KH (°dKH)",
         target_kh_label: "ಗುರಿ KH (°dKH)",
         purity_label: "ಶುದ್ಧತೆ (೦.೫-೧.೦)",
@@ -94,17 +100,19 @@ const translations = {
         current_ph_label: "ಪ್ರಸ್ತುತ pH",
         target_ph_label: "ಗುರಿ pH",
         no_dose_needed: "ಡೋಸ್ ಅಗತ್ಯವಿಲ್ಲ",
-        changelog_btn: "v4.1 ಬದಲಾವಣೆ ಲಾಗ್",
+        changelog_btn: "v5.0 ಬದಲಾವಣೆ ಲಾಗ್",
         calculate_btn: "ಡೋಸ್‌ಗಳನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಿ",
         download_csv_btn: "CSV ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
         reset_btn: "ಎಲ್ಲವನ್ನೂ ಮರುಹೊಂದಿಸಿ",
-        changelog_title: "ಆವೃತ್ತಿ 4.1 ಬದಲಾವಣೆ ಲಾಗ್",
+        changelog_title: "ಆವೃತ್ತಿ 5.0 ಬದಲಾವಣೆ ಲಾಗ್",
         changelog_list: `
-            <li><strong>ನಿರ್ಣಾಯಕ ಪರಿಹಾರ:</strong> ಸೀಕೆಮ್ ಆಸಿಡ್ ಬಫರ್ ಲೆಕ್ಕಾಚಾರವನ್ನು ಸರಿಪಡಿಸಲಾಗಿದೆ, ಇದು ~300% ಅಧಿಕ ಡೋಸ್ ಅನ್ನು ತಡೆಯುತ್ತದೆ.</li>
-            <li><strong>ನಿರ್ಣಾಯಕ ಪರಿಹಾರ:</strong> ಪೊಟ್ಯಾಸಿಯಮ್ ಬೈಕಾರ್ಬನೇಟ್ (KH ಬೂಸ್ಟರ್) ಲೆಕ್ಕಾಚಾರವನ್ನು ಸರಿಪಡಿಸಲಾಗಿದೆ, ಇದು ಕಡಿಮೆ ಡೋಸ್ ಅನ್ನು ತಡೆಯುತ್ತದೆ.</li>
-            <li><strong>ಪ್ರವೇಶಸಾಧ್ಯತೆ:</strong> WCAG AA ಮಾನದಂಡಗಳನ್ನು ಪೂರೈಸಲು UI ಅಂಶಗಳ ಬಣ್ಣದ ಕಾಂಟ್ರಾಸ್ಟ್ ಅನ್ನು ಸುಧಾರಿಸಲಾಗಿದೆ.</li>
-            <li><strong>UI ಸ್ಕೇಲಿಂಗ್:</strong> ಮೊಬೈಲ್ ಸಾಧನಗಳಲ್ಲಿ ಮತ್ತು ವಿವಿಧ ಆಕಾರ ಅನುಪಾತಗಳಲ್ಲಿ ಉತ್ತಮ ವೀಕ್ಷಣೆಗಾಗಿ ದ್ರವ ಮುದ್ರಣಕಲೆ ಮತ್ತು ಹೆಚ್ಚು ಸ್ಪಂದಿಸುವ ವಿನ್ಯಾಸಗಳನ್ನು ಅಳವಡಿಸಲಾಗಿದೆ.</li>
-            <li>ಸಣ್ಣ ಕೋಡ್ ಗುಣಮಟ್ಟ ಮತ್ತು ಭದ್ರತಾ ಸುಧಾರಣೆಗಳು.</li>
+            <li><strong>ಹೊಸ:</strong> ಅಣು ತೂಕದ ಆಧಾರದ ಮೇಲೆ KHCO3 ಲೆಕ್ಕಾಚಾರ (100.115 g/mol)</li>
+            <li><strong>ಹೊಸ:</strong> L×B×H ಟ್ಯಾಂಕ್ ಆಯಾಮ ಕ್ಯಾಲ್ಕುಲೇಟರ್ (cm/in/ft)</li>
+            <li><strong>ಹೊಸ:</strong> ಸೀಕೆಮ್ ಸೇಫ್ ನೀರಿನ ಕಂಡೀಷನರ್ ಡೋಸಿಂಗ್</li>
+            <li><strong>ಹೊಸ:</strong> APT ಕಂಪ್ಲೀಟ್ ರಸಗೊಬ್ಬರ (80% ಡೋಸ್)</li>
+            <li><strong>ಹೊಸ:</strong> ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ಅಡ್ವಾನ್ಸ್ಡ್ ಬಫರ್‌ಗಳೊಂದಿಗೆ ಹ್ಯಾಂಬರ್ಗರ್ ಮೆನು</li>
+            <li><strong>ಸುಧಾರಿತ:</strong> ಎಲ್ಲಾ ಲೆಕ್ಕಾಚಾರಗಳು 0.0001 ನಿಖರತೆ</li>
+            <li><strong>UI:</strong> ಸ್ಥಿರ ಅಡಿಟಿಪ್ಪಣಿ, ಮಿನಿಮಲಿಸ್ಟ್ ಆಧುನಿಕ ವಿನ್ಯಾಸ</li>
         `
     }
 };
